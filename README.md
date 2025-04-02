@@ -11,7 +11,9 @@ O jogo da Selva (“Jungle”) é um jogo de tabuleiro inspirado no xadrez, onde
 O padrão **Decorator** é utilizado para adicionar funcionalidades específicas a determinados animais sem modificar suas classes base. Ele permite estender o comportamento de um objeto de forma flexível.
 
 #### UML do Decorator
-```mermaid
+
+```
+mermaid
 title Decorator
 classDiagram
     class GamePiece {
