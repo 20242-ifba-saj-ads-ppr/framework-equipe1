@@ -9,6 +9,6 @@ import java.util.List;
 public interface GameFactory {
     Board createBoard();
     List<Player> createPlayers();
-    List<GamePiece> createPieces();
+    List<GamePiece> createPieces(Player player);
 
 }
