@@ -7,6 +7,7 @@ import framework.core.cell.Cell;
 import framework.core.piece.GamePiece;
 import framework.core.rules.imp.GameRule;
 import games.jungle.core.CellType;
+import games.jungle.core.pieces.Rat;
 
 public class WaterMovementRule implements GameRule {
     @Override

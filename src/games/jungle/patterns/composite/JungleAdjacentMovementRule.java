@@ -7,6 +7,8 @@ import framework.core.cell.Cell;
 import framework.core.piece.GamePiece;
 import framework.patterns.composite.rules.AdjacentMovementRule;
 import games.jungle.core.CellType;
+import games.jungle.core.pieces.Lion;
+import games.jungle.core.pieces.Tiger;
 
 public class JungleAdjacentMovementRule extends AdjacentMovementRule {
     @Override

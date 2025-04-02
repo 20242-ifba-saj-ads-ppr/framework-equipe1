@@ -2,7 +2,6 @@ package framework.core;
 
 import framework.core.cell.Cell;
 import framework.core.piece.GamePiece;
-import framework.core.rules.imp.GameOverRule;
 import framework.patterns.composite.CompositeRule;
 
 import java.util.ArrayList;
@@ -14,15 +13,13 @@ public class Game {
     private Player currentPlayer;
     private CompositeRule ruleEngine;
     private List<Move> moveHistory;
-    private GameOverRule gameOverRule;
     private boolean gameOver = false;
     private Player winner = null;
 
-    public Game(Board board, List<Player> players, CompositeRule ruleEngine, GameOverRule gameOverRule) {
+    public Game(Board board, List<Player> players, CompositeRule ruleEngine) {
         this.board = board;
         this.players = players;
         this.ruleEngine = ruleEngine;
-        this.gameOverRule = gameOverRule;
         this.moveHistory = new ArrayList<>();
 
         if (!players.isEmpty()) {
@@ -77,13 +74,6 @@ public class Game {
 
 
         moveHistory.add(move);
-
-        if (gameOverRule != null) {
-            gameOver = gameOverRule.checkGameOver(this);
-            if (gameOver) {
-                winner = gameOverRule.getWinner(this);
-            }
-        }
 
         nextPlayer();
 
