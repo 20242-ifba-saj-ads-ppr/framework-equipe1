@@ -3,7 +3,6 @@
 ## Introdução
 O jogo da Selva (“Jungle”) é um jogo de tabuleiro inspirado no xadrez, onde animais com diferentes hierarquias se enfrentam. Neste projeto, utilizamos os padrões de projeto **Decorator** e **Template Method** para estruturar as classes dos animais e seus comportamentos.
 
----
 
 ## Padrões Utilizados
 
@@ -91,7 +90,6 @@ public class Lion extends JungleAnimal {
 }
 ```
 
----
 
 ### 2. **Template Method**
 O padrão **Template Method** é utilizado na classe abstrata `JungleAnimal`, onde a lógica padrão de movimentação e captura é definida, permitindo que subclasses sobrescrevam apenas partes específicas do comportamento.
@@ -186,7 +184,6 @@ public abstract class JungleAnimal implements GamePiece {
 }
 ```
 
----
 
 ## Comparativo dos Participantes dos Padrões Utilizados com o GOF
 
@@ -204,7 +201,6 @@ public abstract class JungleAnimal implements GamePiece {
 | **AbstractClass** | `JungleAnimal` (Define a estrutura padrão dos métodos) |
 | **ConcreteClass** | `Elephant`, `Lion`, `Tiger` (Sobrescrevem comportamentos específicos) |
 
----
 
 
 
