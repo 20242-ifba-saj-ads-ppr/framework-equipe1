@@ -182,3 +182,4 @@ Com o **Template Method**, os métodos `canMoveTo` e `canCapture` são implement
 | **AbstractClass** | `JungleAnimal` (define a estrutura padrão dos métodos)       |
 | **ConcreteClass** | `Elephant`, `Lion`, `Tiger` (sobrescrevem comportamentos específicos) |
 
+
