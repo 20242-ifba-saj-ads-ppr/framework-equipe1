@@ -13,8 +13,6 @@ O padrão **Decorator** é utilizado para adicionar funcionalidades específicas
 #### UML do Decorator
 
 ```mermaid
-
-title Decorator
 classDiagram
     class GamePiece {
         +PieceType getType()
@@ -209,8 +207,5 @@ public abstract class JungleAnimal implements GamePiece {
 
 ---
 
-## Conclusão
-A utilização dos padrões **Decorator** e **Template Method** permitiu estruturar melhor a lógica do jogo, promovendo maior flexibilidade e reutilização de código. Com isso, conseguimos modelar os diferentes comportamentos dos animais sem modificar diretamente a classe base `JungleAnimal`.
 
-Se precisar de mais detalhes ou ajustes, fique à vontade para sugerir! 🚀
 
