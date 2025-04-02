@@ -5,15 +5,10 @@ import framework.core.Move;
 import framework.core.Position;
 import framework.core.cell.Cell;
 import framework.core.piece.GamePiece;
-import framework.patterns.abstractFactory.GameFactory;
 
 public class GameManager {
     private static GameManager instance;
     private Game currentGame;
-
-    private GameManager() {
-        // Construtor privado
-    }
 
     public static synchronized GameManager getInstance() {
         if (instance == null) {
@@ -31,7 +26,6 @@ public class GameManager {
     }
 
 
-
     public boolean makeMove(Position from, Position to) {
         if (currentGame == null) {
             return false;
@@ -47,7 +41,6 @@ public class GameManager {
 
         return currentGame.makeMove(move);
     }
-
 
 }
 

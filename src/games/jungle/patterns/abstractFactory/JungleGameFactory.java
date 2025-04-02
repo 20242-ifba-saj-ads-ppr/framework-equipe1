@@ -1,14 +1,19 @@
-package games.patterns.abstractFactory;
+package games.jungle.patterns.abstractFactory;
 
 import framework.core.Board;
 import framework.core.Player;
 import framework.core.Position;
 import framework.core.piece.GamePiece;
-import games.core.PieceType;
+import framework.core.rules.imp.GameRule;
+import framework.patterns.composite.CompositeRule;
+import framework.patterns.composite.rules.TurnBasedRule;
+import games.jungle.core.PieceType;
 import framework.patterns.abstractFactory.GameFactory;
 import framework.patterns.builder.BoardBuilder;
 import framework.patterns.factoryMethod.GamePieceFactory;
-import games.core.CellType;
+import games.jungle.core.CellType;
+import games.jungle.patterns.composite.*;
+import games.jungle.patterns.factoryMethod.JungleGamePieceFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,7 +21,6 @@ import java.util.List;
 public class JungleGameFactory implements GameFactory {
     @Override
     public Board createBoard() {
-        // Criar um tabuleiro personalizado para o jogo da Selva
         return new BoardBuilder()
                 .setDimensions(7, 9)
                 .setCellTypes(CellType.NORMAL)
@@ -60,9 +64,7 @@ public class JungleGameFactory implements GameFactory {
         List<GamePiece> pieces = new ArrayList<>();
         GamePieceFactory pieceFactory = new JungleGamePieceFactory();
 
-        // Criar peças com base no jogador
         if (player.getId().equals("1")) {
-            // Peças para o jogador 1 (posições iniciais)
             pieces.add(createAndPlacePiece(pieceFactory, PieceType.ELEPHANT, player, new Position(0, 0)));
             pieces.add(createAndPlacePiece(pieceFactory, PieceType.LION, player, new Position(6, 0)));
             pieces.add(createAndPlacePiece(pieceFactory, PieceType.TIGER, player, new Position(0, 8)));
@@ -72,7 +74,6 @@ public class JungleGameFactory implements GameFactory {
             pieces.add(createAndPlacePiece(pieceFactory, PieceType.CAT, player, new Position(5, 3)));
             pieces.add(createAndPlacePiece(pieceFactory, PieceType.RAT, player, new Position(0, 2)));
         } else {
-            // Peças para o jogador 2 (posições iniciais)
             pieces.add(createAndPlacePiece(pieceFactory, PieceType.ELEPHANT, player, new Position(6, 8)));
             pieces.add(createAndPlacePiece(pieceFactory, PieceType.LION, player, new Position(0, 8)));
             pieces.add(createAndPlacePiece(pieceFactory, PieceType.TIGER, player, new Position(6, 0)));
@@ -94,25 +95,21 @@ public class JungleGameFactory implements GameFactory {
     }
 
     @Override
-    public RuleEngine createRuleEngine() {
-        RuleEngine engine = new RuleEngine();
+    public GameRule createRuleEngine() {
+        CompositeRule engine = new CompositeRule();
 
-        // Adicionar regras básicas
         engine.addRule(new TurnBasedRule());
-        engine.addRule(new AdjacentMovementRule());
+        engine.addRule(new JungleAdjacentMovementRule());
 
-        // Adicionar regras específicas do jogo da selva
+
         CompositeRule captureRules = new CompositeRule();
         captureRules.addRule(new RankBasedCaptureRule());
-        captureRules.addRule(new SpecialCaptureRule()); // Para exceções como Rato vs Elefante
+        captureRules.addRule(new SpecialCaptureRule());
 
         engine.addRule(captureRules);
         engine.addRule(new WaterMovementRule());
         engine.addRule(new TrapRule());
         engine.addRule(new DenRule());
-
-        // Regra de fim de jogo
-        engine.addRule(new JungleGameOverRule());
 
         return engine;
     }

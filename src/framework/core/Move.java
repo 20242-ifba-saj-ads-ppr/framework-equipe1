@@ -2,6 +2,7 @@ package framework.core;
 
 import framework.core.cell.Cell;
 import framework.core.piece.GamePiece;
+import framework.patterns.composite.CompositeRule;
 
 public class Move {
     private Position from;
@@ -83,7 +84,7 @@ public class Move {
         return true;
     }
 
-    public boolean validate(RuleEngine rules, Board board) {
-        return rules.validateMove(this, board);
+    public boolean validate(CompositeRule rules, Board board) {
+        return rules.validate(this, board);
     }
 }
