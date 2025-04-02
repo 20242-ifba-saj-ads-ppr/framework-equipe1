@@ -12,8 +12,8 @@ O padrão **Decorator** é utilizado para adicionar funcionalidades específicas
 
 #### UML do Decorator
 
-```
-mermaid
+```mermaid
+
 title Decorator
 classDiagram
     class GamePiece {
