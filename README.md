@@ -98,7 +98,6 @@ O padrão **Template Method** é utilizado na classe abstrata `JungleAnimal`, on
 
 #### UML do Template Method
 ```mermaid
-title Template Method
 classDiagram
     class JungleAnimal {
         +boolean canMoveTo(Board, Position, Position)
