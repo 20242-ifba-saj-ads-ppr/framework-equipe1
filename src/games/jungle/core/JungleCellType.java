@@ -1,4 +1,12 @@
 package games.jungle.core;
 
-public enum JungleCellType {
+import framework.core.cellType.CellType;
+
+public enum JungleCellType implements CellType {
+    WATER, TRAP, DEN;
+
+    @Override
+    public String getName() {
+        return name();
+    }
 }
