@@ -1,19 +1,22 @@
 package framework.core;
 
 import framework.core.cellType.CellType;
+import framework.patterns.flyweight.GamePiece;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-public record GameBoard (
-        int width,
-        int height,
-        Map<Position, Cell> cells
-) {
+public class GameBoard{
+    private final int width, height;
+    private final Map<Position, Cell> cells;
+    private List<GamePiece> pieces;
 
     public GameBoard(int width, int height){
-        this(width, height, new HashMap<>());
-        this.initializeCells();
+        this.width = width;
+        this.height = height;
+        this.cells = new HashMap<>();
+        initializeCells();
     }
 
     private void initializeCells() {
@@ -30,5 +33,25 @@ public record GameBoard (
         if (cells.containsKey(pos)) {
             cells.get(pos).setType(type);
         }
+    }
+
+    public Cell getCell(Position pos) {
+        return cells.get(pos);
+    }
+
+    public int getWidth() {
+        return width;
+    }
+
+    public int getHeight() {
+        return height;
+    }
+
+    public List<GamePiece> getPieces() {
+        return pieces;
+    }
+
+    public void setPieces(List<GamePiece> pieces) {
+        this.pieces = pieces;
     }
 }
