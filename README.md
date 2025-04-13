@@ -4,182 +4,124 @@ O jogo da Selva (*Jungle*) é um jogo de tabuleiro inspirado no xadrez, onde ani
 
 ---
 
-## 1. Padrão Decorator
+## 1. Padrão Builder
 
 ### Intenção do Padrão (conforme Gama)
-O padrão **Decorator** permite estender o comportamento de objetos de maneira flexível e dinâmica, sem alterar as classes base, adicionando funcionalidades de forma transparente e modular.
+Separar a construção de um objeto complexo da sua representação de modo que o
+mesmo processo de construção possa criar diferentes representações.
 
-### Motivação
-No jogo da Selva, cada animal possui características específicas que podem variar conforme o tipo de animal (por exemplo, o Leão pode pular sobre a água, enquanto o Elefante não pode capturar o Rato). A implementação direta dessas características resultaria em um código rígido e de difícil manutenção. O padrão **Decorator** permite modularizar essas variações sem modificar diretamente as classes dos animais.
+### Motivação  
+No framework de jogos de tabuleiro, cada jogo (Selva, Xadrez, Damas …) possui:
 
-### Cenário sem o Padrão
-Sem o uso do padrão **Decorator**, as funcionalidades específicas dos animais seriam implementadas diretamente nas classes concretas. Isso resultaria em:
-- Código rígido e difícil de manter;
-- Necessidade de modificar as classes base para adicionar novas funcionalidades;
-- Baixa reutilização de código.
+* tamanhos de tabuleiro distintos;  
+* tipos de células próprios (água, armadilha, castelo, casa escura);  
+* regras de posicionamento inicial exclusivas.
 
-#### Classes Envolvidas
-- `GamePiece` (interface)
-- `JungleAnimal` (classe base para todos os animais)
-- `Elephant`, `Lion`, `Tiger` (classes concretas com comportamento específico)
+Se cada jogo **construísse seu tabuleiro “na mão”**, o código‐cliente ficaria repleto de `new Cell(...)`, `setCellType(...)`, laços aninhados e **ordem de chamadas difícil de manter**. O **Builder** encapsula esse processo, permitindo que:
+
+* o **framework** defina *o que* precisa ser feito;  
+* cada jogo decida *como* fazer.
+
+### Cenário sem o Padrão  
+Todo o código de montagem ficaria em uma única classe de jogo:
+
+```java
+class JungleGame {
+    GameBoard board = new GameBoard(7, 9);
+
+    void init() {
+        // cria células
+        for (int x = 0; x < 7; x++)
+            for (int y = 0; y < 9; y++)
+                board.addCell(new Cell(new Position(x, y)));
+
+        // configura água
+        ...
+        // configura armadilhas
+        ...
+        // posiciona peças
+        ...
+    }
+}
+```
+
+#### Problemas  
+* Repetição do mesmo “ritual” em todo novo jogo.  
+* Ordem de passos rígida: qualquer erro quebra a montagem.  
+* Nenhuma reutilização entre jogos.
 
 #### UML sem o Padrão
-```mermaid
-classDiagram
-    class GamePiece {
-        +PieceType getType()
-        +Player getOwner()
-        +Position getInitialPosition()
-        +boolean canMoveTo(Board, Position, Position)
-        +boolean canCapture(GamePiece)
-    }
+```plantuml
+@startuml
+class JungleGame {
+  +init()
+  -GameBoard board
+}
 
-    class JungleAnimal {
-        +JungleAnimalType type
-        +Player owner
-        +Position initialPosition
-    }
+class GameBoard
+class Cell
+class Position
 
-    class Elephant {
-        +boolean canCapture(GamePiece)
-    }
-
-    class Lion {
-        +boolean canMoveTo(Board, Position, Position)
-        +boolean canJumpOverWater(Board, Position, Position)
-    }
-
-    class Tiger {
-        +Herda comportamento do Lion
-    }
-
-    GamePiece <|-- JungleAnimal
-    JungleAnimal <|-- Elephant
-    JungleAnimal <|-- Lion
-    Lion <|-- Tiger
+JungleGame --> GameBoard
+GameBoard --> Cell
+Cell --> Position
+@enduml
 ```
 
-### Estrutura do Padrão
-Com a aplicação do padrão **Decorator**, criamos classes específicas para modificar o comportamento dos animais sem alterar suas classes base.
+### Estrutura do padrão
+![alt text](imgs/image.png)
 
-#### UML com o Padrão Decorator
-```mermaid
-classDiagram
-    class GamePiece
-    class JungleAnimal
-    class AnimalDecorator
-    class Elephant
-    class Lion
-    class Tiger
-    class JumpOverWater
-    class StrongCapture
+### Padrão aplicado no cenário
+Com o padrão **Builder**, o framework define uma interface `BoardBuilder` com os passos genéricos para construção de qualquer tabuleiro. Cada jogo concreto, como o Jogo da Selva, implementa esses passos no `JungleBoardBuilder`.
 
-    GamePiece <|-- JungleAnimal
-    JungleAnimal <|-- AnimalDecorator
-    AnimalDecorator <|-- Elephant
-    AnimalDecorator <|-- Lion
-    Lion <|-- Tiger
-    AnimalDecorator <|-- JumpOverWater
-    AnimalDecorator <|-- StrongCapture
+Um diretor (`GameBoardDirector`) conhece apenas a sequência genérica de montagem, não os detalhes de cada jogo, e é capaz de construir qualquer tabuleiro usando um builder adequado.
+
+#### Classes envolvidas
+- `BoardBuilder` (interface)
+- `JungleBoardBuilder`, `ChessBoardBuilder` (builders concretos)
+- `GameBoardDirector` (diretor)
+- `GameBoard` (produto final)
+
+#### UML com o padrão aplicado
+```plantuml
+@startuml
+interface BoardBuilder {
+  +createBoard(int, int)
+  +configureCells()
+  +populatePieces()
+  +getResult() : GameBoard
+}
+
+class GameBoardDirector {
+  +construct(int, int) : GameBoard
+  -BoardBuilder builder
+}
+
+class JungleBoardBuilder
+class GameBoard
+
+BoardBuilder <|.. JungleBoardBuilder
+GameBoardDirector --> BoardBuilder
+JungleBoardBuilder --> GameBoard
+@enduml
 ```
 
-### Cenário com o Padrão
-Com a introdução do **Decorator**, as habilidades especiais dos animais são separadas em classes decoradoras. Por exemplo:
-- `JumpOverWater` pode ser adicionado ao `Lion` e `Tiger` sem modificar suas classes;
-- `StrongCapture` pode ser usado para definir regras específicas de captura sem alterar a classe base dos animais.
+### Participantes (alinhados ao GOF)
 
-### Participantes
-| GOF               | Implementação no Jogo                |
-|------------------|--------------------------------------|
-| **Component**     | `JungleAnimal` (interface base) |
-| **ConcreteComponent** | `Elephant`, `Lion`, `Tiger` (animais específicos) |
-| **Decorator**     | `AnimalDecorator` (base para decoradores) |
-| **ConcreteDecorator** | `JumpOverWater`, `StrongCapture` (habilidades adicionadas) |
+| GOF               | Implementação no Projeto                       |
+|------------------|-------------------------------------------------|
+| **Builder**       | `BoardBuilder` – interface genérica para construção de tabuleiros |
+| **ConcreteBuilder** | `JungleBoardBuilder`, – implementam a construção específica de cada jogo |
+| **Director**      | `GameBoardDirector` – orquestra os passos da construção |
+| **Product**       | `GameBoard` – representação final do tabuleiro construído |
 
----
-
-## 2. Padrão Template Method
-
-### Intenção do Padrão (conforme Gama)
-O padrão **Template Method** define a estrutura de um algoritmo na superclasse, permitindo que subclasses sobrescrevam etapas específicas sem modificar a estrutura do algoritmo.
-
-### Motivação
-No jogo da Selva, muitos animais compartilham comportamentos similares, como movimentação e captura, mas com pequenas variações. O padrão **Template Method** permite que a lógica geral seja definida na classe abstrata `JungleAnimal`, enquanto os detalhes específicos são sobrescritos nas subclasses.
-
-### Cenário sem o Padrão
-Sem o uso do **Template Method**, cada animal precisaria implementar totalmente seus métodos de movimentação e captura, resultando em:
-- Duplicação de código;
-- Dificuldade de manutenção;
-- Baixa reutilização de lógica comum.
-
-#### Classes Envolvidas
-- `JungleAnimal` (classe base com métodos genéricos)
-- `Elephant`, `Lion`, `Tiger` (subclasses que implementam variações)
-
-#### UML sem o Padrão
-```mermaid
-classDiagram
-    class JungleAnimal {
-        +boolean canMoveTo(Board, Position, Position)
-        +boolean canCapture(GamePiece)
-    }
-
-    class Elephant {
-        +Sobrescreve canCapture()
-    }
-
-    class Lion {
-        +Sobrescreve canMoveTo()
-        +Adiciona canJumpOverWater()
-    }
-
-    class Tiger {
-        +Herda comportamento do Lion
-    }
-
-    JungleAnimal <|-- Elephant
-    JungleAnimal <|-- Lion
-    Lion <|-- Tiger
-```
-
-### Estrutura do Padrão
-O padrão **Template Method** extrai a lógica comum para a classe base `JungleAnimal`, enquanto subclasses sobrescrevem apenas partes específicas.
-
-#### UML com o Padrão Template Method
-```mermaid
-classDiagram
-    class JungleAnimal {
-        +boolean canMoveTo(Board, Position, Position)
-        +boolean canCapture(GamePiece)
-        #boolean specificMove(Board, Position, Position)
-        #boolean specificCapture(GamePiece)
-    }
-
-    class Elephant {
-        +Sobrescreve specificCapture()
-    }
-
-    class Lion {
-        +Sobrescreve specificMove()
-        +Adiciona canJumpOverWater()
-    }
-
-    class Tiger {
-        +Herda comportamento do Lion
-    }
-
-    JungleAnimal <|-- Elephant
-    JungleAnimal <|-- Lion
-    Lion <|-- Tiger
-```
-
-### Cenário com o Padrão
-Com o **Template Method**, os métodos `canMoveTo` e `canCapture` são implementados na classe `JungleAnimal`, enquanto detalhes específicos são delegados para métodos abstratos sobrescritos nas subclasses (`specificMove` e `specificCapture`).
-
-### Participantes
-| GOF               | Implementação no Jogo                                      |
-|------------------|--------------------------------------------------------------|
-| **AbstractClass** | `JungleAnimal` (define a estrutura padrão dos métodos)       |
-| **ConcreteClass** | `Elephant`, `Lion`, `Tiger` (sobrescrevem comportamentos específicos) |
+### Código
 
 
+#### Código do Framework
+@import "./src/framework/patterns/builder/BoardBuilder.java"
+
+@import "./src/framework/patterns/builder/GameBoardDirector.java"
+
+#### Código do Jogo Selva
+@import "./src/games/jungle/patterns/builder/JungleBoardBuilder.java"
