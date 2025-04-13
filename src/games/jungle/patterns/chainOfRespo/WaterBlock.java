@@ -1,11 +1,11 @@
-package games.jungle.patterns.chainableMoveStrategies;
+package games.jungle.patterns.chainOfRespo;
 
 import framework.core.GameBoard;
 import framework.core.Position;
 import framework.patterns.chainOfRespo.MoveHandler;
 import games.jungle.core.JungleCellType;
 
-public class WaterBlockStrategy extends MoveHandler {
+public class WaterBlock extends MoveHandler {
     @Override
     public boolean move(Position from, Position to, GameBoard board) {
         if (!board.getCell(to).getType().equals(JungleCellType.WATER)) {

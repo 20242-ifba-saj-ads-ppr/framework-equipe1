@@ -1,11 +1,11 @@
-package games.jungle.patterns.chainableMoveStrategies;
+package games.jungle.patterns.chainOfRespo;
 
 import framework.core.GameBoard;
 import framework.core.Position;
 import framework.patterns.chainOfRespo.MoveHandler;
 import games.jungle.patterns.JungleBoard;
 
-public class LeapOverRiverStrategy extends MoveHandler {
+public class LeapOverRiver extends MoveHandler {
     @Override
     public boolean move(Position from, Position to, GameBoard board) {
         if(!(board instanceof JungleBoard)){

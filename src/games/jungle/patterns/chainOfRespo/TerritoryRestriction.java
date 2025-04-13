@@ -1,11 +1,11 @@
-package games.jungle.patterns.chainableMoveStrategies;
+package games.jungle.patterns.chainOfRespo;
 
 import framework.core.GameBoard;
 import framework.core.Position;
 import framework.patterns.chainOfRespo.MoveHandler;
 import games.jungle.core.JungleCellType;
 
-public class TerritoryRestrictionStrategy extends MoveHandler {
+public class TerritoryRestriction extends MoveHandler {
 
     @Override
     public boolean move(Position from, Position to, GameBoard board) {

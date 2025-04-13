@@ -1,8 +1,6 @@
 package framework.patterns.chainOfRespo;
 
-import framework.patterns.strategy.MoveStrategy;
-
-public abstract class MoveHandler implements MoveStrategy {
+public abstract class MoveHandler implements Move {
     protected MoveHandler next;
 
     public MoveHandler setNext(MoveHandler next) {
