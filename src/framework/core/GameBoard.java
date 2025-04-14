@@ -6,6 +6,7 @@ import framework.patterns.flyweight.GamePiece;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public class GameBoard{
     private final int width, height;
@@ -53,5 +54,10 @@ public class GameBoard{
 
     public void setPieces(List<GamePiece> pieces) {
         this.pieces = pieces;
+    }
+
+    public Optional<GamePiece> getPieceAt(Position pos) {
+        return pieces == null ? Optional.empty()
+                : pieces.stream().filter(p -> pos.equals(p.getPosition())).findFirst();
     }
 }
