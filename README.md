@@ -316,7 +316,6 @@ JungleGamePiece --> Move
 @enduml
 ```
 
----
 
 ### Estrutura do Padrão  
 ![alt text](imgs/flyweight_structure.png)
@@ -359,8 +358,6 @@ GamePieceProps --> Move
 @enduml
 ```
 
----
-
 ### Participantes
 
 | GOF               | Implementação no Projeto                                |
@@ -370,7 +367,6 @@ GamePieceProps --> Move
 | **FlyweightFactory** | `JungleGamePieceFactory` – gerencia e reaproveita flyweights |
 | **Client**         | `GamePiece` – usa `GamePieceProps` compartilhado |
 
----
 
 ### Código
 
@@ -382,3 +378,126 @@ GamePieceProps --> Move
 @import "./src/games/jungle/patterns/factory/flyweight/JungleGamePieceFactory.java"
 
 ---
+
+## 4. Padrão Factory
+
+### Intenção do Padrão  
+Definir uma interface para criar um objeto, mas deixar as subclasses decidirem qual classe instanciar. O padrão Factory permite adiar a instanciação para subclasses.
+
+### Motivação  
+No framework, cada jogo precisa criar peças com comportamentos específicos, como:
+
+* diferentes regras de movimentação (`MoveHandler`);  
+* tipos únicos de peças (como `Mouse`, `Elephant`, `Tiger` no Jungle);  
+* quantidades variáveis por tipo.
+
+Sem o padrão Factory, a lógica de criação ficaria espalhada, resultando em **código duplicado, difícil de manter e testar**.
+
+### Cenário sem o Padrão  
+Cada jogo implementaria diretamente a criação de peças:
+
+```java
+class JungleGame {
+    List<GamePiece> pieces;
+
+    void init() {
+        pieces = new ArrayList<>();
+        pieces.add(new GamePiece(new GamePieceProps(JunglePieceType.MOUSE, new TerritoryRestriction())));
+        pieces.add(new GamePiece(new GamePieceProps(JunglePieceType.LION, new LeapOverRiver())));
+        ...
+    }
+}
+```
+
+#### Problemas  
+* Repetição de lógica em cada jogo.  
+* Dificuldade para configurar cadeias de movimentação (Chain of Responsibility).  
+* Nenhuma reutilização ou centralização da criação.
+
+#### UML sem o Padrão  
+```plantuml
+@startuml
+class JungleGame {
+  +init()
+  -List<GamePiece> pieces
+}
+
+class GamePiece
+class GamePieceProps
+class JunglePieceType
+
+JungleGame --> GamePiece
+GamePiece --> GamePieceProps
+GamePieceProps --> JunglePieceType
+@enduml
+```
+
+### Estrutura do padrão
+![alt text](imgs/factory.png)
+
+### Padrão aplicado no cenário  
+Com o padrão **Factory**, o framework define a classe abstrata `GamePieceFactory`, que centraliza a criação de peças de forma genérica. Jogos específicos como Jungle implementam sua própria fábrica (`JungleGamePieceFactory`) para configurar regras e movimentações exclusivas.
+
+A lógica de movimentação é extraída para uma classe separada (`JungleMoveFactory`), que decide quais `MoveHandlers` devem ser aplicados para cada tipo de peça, seguindo o padrão Chain of Responsibility.
+
+#### Classes envolvidas  
+- `GamePieceFactory` (classe abstrata base)  
+- `JungleGamePieceFactory` (fábrica concreta)  
+- `JungleMoveFactory` (fábrica de regras de movimentação)  
+- `GamePiece` (produto final com propriedades compartilhadas – padrão Flyweight)  
+- `GamePieceProps` (propriedades da peça – tipo e movimento)
+
+#### UML com o padrão aplicado  
+```plantuml
+@startuml
+abstract class GamePieceFactory {
+  +createGamePiece(PieceType) : GamePiece
+  +createGamePiece(int, PieceType) : List<GamePiece>
+  -Map<PieceType, GamePieceProps> gamePieceProMap
+}
+
+class JungleGamePieceFactory {
+  -JungleMoveFactory moveFactory
+  +createGamePiece(PieceType) : GamePiece
+  +createGamePiece(int, PieceType) : List<GamePiece>
+}
+
+interface Move
+interface MoveHandler
+
+class JungleMoveFactory {
+  +createMoveChain(JunglePieceType) : Move
+}
+
+GamePieceFactory <|-- JungleGamePieceFactory
+JungleGamePieceFactory --> JungleMoveFactory
+JungleMoveFactory --> MoveHandler
+GamePiece --> GamePieceProps
+GamePieceProps --> Move
+GamePieceProps --> PieceType
+@enduml
+```
+
+### Participantes
+
+| GOF               | Implementação no Projeto                          |
+|------------------|----------------------------------------------------|
+| **Product**        | `GamePiece` – representação da peça criada        |
+| **Creator**        | `GamePieceFactory` – classe abstrata de criação   |
+| **ConcreteCreator**| `JungleGamePieceFactory` – cria peças específicas |
+| **Factory Method** | `createGamePiece(...)` – encapsula a criação de peças |
+
+### Código
+
+#### Código do Framework  
+@import "./src/framework/patterns/factory/GamePieceFactory.java"
+
+#### Código do Jogo Selva  
+@import "./src/games/jungle/patterns/factory/JungleGamePieceFactory.java"  
+@import "./src/games/jungle/patterns/factory/JungleMoveFactory.java"
+
+
+
+
+
+
