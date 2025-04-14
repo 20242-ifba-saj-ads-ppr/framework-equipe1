@@ -125,3 +125,143 @@ JungleBoardBuilder --> GameBoard
 
 #### Código do Jogo Selva
 @import "./src/games/jungle/patterns/builder/JungleBoardBuilder.java"
+
+---
+
+Perfeito! Aqui está a seção atualizada com **um exemplo de código da estrutura sem o padrão Abstract Factory**, antes de sua aplicação — mantendo o mesmo estilo usado no Builder:
+
+---
+
+## 2. Padrão Abstract Factory
+
+### Intenção do Padrão 
+Fornecer uma interface para criação de famílias de objetos relacionados ou dependentes sem especificar suas classes concretas.
+
+### Motivação  
+No contexto de um **framework de jogos de tabuleiro**, é necessário que cada jogo seja capaz de:
+
+* Criar suas **peças de jogo** com características próprias;  
+* Instanciar o **tabuleiro** conforme sua lógica de construção (já encapsulada no `BoardBuilder`);  
+* Definir os **jogadores** participantes da partida.
+
+Sem o uso do padrão Abstract Factory, o código do framework ficaria acoplado às classes concretas de cada jogo (por exemplo: `JungleGamePiece`, `JungleBoardBuilder`, etc.), **violando o princípio da inversão de dependência** e prejudicando a reutilização.
+
+Com o padrão, o framework lida com uma **fábrica abstrata** (`GameAbstractFactory`), permitindo que cada jogo implemente sua própria lógica de criação.
+
+### Cenário sem o Padrão  
+O código do framework precisaria conhecer e instanciar diretamente as classes concretas específicas de cada jogo:
+
+```java
+class GameInitializer {
+
+    public GameBoard setupJungleGame() {
+        // Criando peças diretamente (sem flyweight)
+        List<GamePiece> pieces = new ArrayList<>();
+        pieces.add(new JungleLion(PieceType.LION, "JunglePlayer1"));
+        pieces.add(new JungleTiger(PieceType.TIGER, "JunglePlayer2"));
+        // ... outras peças
+
+        // Criando tabuleiro manualmente
+        JungleBoardBuilder builder = new JungleBoardBuilder();
+        GameBoardDirector director = new GameBoardDirector(builder);
+        GameBoard board = director.construct(7, 9);
+
+        // Criando jogadores diretamente
+        List<Player> players = List.of(new Player("JunglePlayer1"), new Player("JunglePlayer2"));
+
+        // Retorna o tabuleiro (mas lógica está fragmentada)
+        return board;
+    }
+}
+```
+
+#### Problemas  
+* O framework precisa conhecer classes concretas do Jogo da Selva.  
+* Dificulta a adição de novos jogos: cada novo jogo requer alteração no código do framework.  
+* Quebra o **Open-Closed Principle** (princípio do aberto-fechado).
+
+#### UML sem o Padrão
+```plantuml
+@startuml
+class GameInitializer {
+  +setupJungleGame() : GameBoard
+}
+
+class JungleLion
+class JungleTiger
+class JungleBoardBuilder
+class GameBoardDirector
+class Player
+class GameBoard
+
+GameInitializer --> JungleLion
+GameInitializer --> JungleTiger
+GameInitializer --> JungleBoardBuilder
+GameInitializer --> GameBoardDirector
+GameInitializer --> Player
+GameBoardDirector --> GameBoard
+@enduml
+```
+
+### Estrutura do padrão  
+![alt text](imgs/abstract_factory.png)
+
+### Padrão aplicado no cenário  
+O framework define a interface `GameAbstractFactory`, que declara métodos para criação dos principais componentes de um jogo:
+
+- `createGamePieces(...)`  
+- `createGameBoard(...)`  
+- `createPlayers()`
+
+Cada jogo, como o Jogo da Selva, implementa essa interface em uma fábrica concreta (`JungleAbstractFactory`), que utiliza seus próprios objetos (`JungleGamePieceFactory`, `JungleBoardBuilder`, `Player`, etc.).
+
+#### Classes envolvidas
+- `GameAbstractFactory` (interface)
+- `JungleAbstractFactory` (fábrica concreta do Jogo da Selva)
+- `JungleGamePieceFactory` (fábrica de peças específicas)
+- `GameBoardDirector` (diretor de construção de tabuleiros)
+- `BoardBuilder` (builder concreto usado na construção do tabuleiro)
+
+#### UML com o padrão aplicado
+```plantuml
+@startuml
+interface GameAbstractFactory {
+  +createGamePieces(Map<PieceType, Integer>) : List<GamePiece>
+  +createGameBoard(BoardBuilder) : GameBoard
+  +createPlayers() : List<Player>
+}
+
+class JungleAbstractFactory {
+  -JungleGamePieceFactory gamePieceFactory
+  -GameBoardDirector gameBoardDirector
+  +createGamePieces(Map) : List<GamePiece>
+  +createGameBoard(BoardBuilder) : GameBoard
+  +createPlayers() : List<Player>
+}
+
+GameAbstractFactory <|.. JungleAbstractFactory
+JungleAbstractFactory --> JungleGamePieceFactory
+JungleAbstractFactory --> GameBoardDirector
+GameBoardDirector --> BoardBuilder
+@enduml
+```
+
+### Participantes (alinhados ao GOF)
+
+| GOF                  | Implementação no Projeto                               |
+|----------------------|---------------------------------------------------------|
+| **AbstractFactory**   | `GameAbstractFactory` – interface genérica para criação de jogos |
+| **ConcreteFactory**   | `JungleAbstractFactory` – implementação específica do jogo da Selva |
+| **Product**           | `GamePiece`, `GameBoard`, `Player` – elementos a serem criados |
+| **ConcreteProduct**   | `JungleGamePiece`, `JungleBoard`, jogadores do Jogo da Selva |
+
+### Código
+
+#### Código do Framework
+@import "./src/framework/patterns/abstractFactory/GameAbstractFactory.java"
+
+#### Código do Jogo Selva
+@import "./src/games/jungle/patterns/abstractFactory/JungleAbstractFactory.java"
+
+---
+
