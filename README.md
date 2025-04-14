@@ -128,10 +128,6 @@ JungleBoardBuilder --> GameBoard
 
 ---
 
-Perfeito! Aqui está a seção atualizada com **um exemplo de código da estrutura sem o padrão Abstract Factory**, antes de sua aplicação — mantendo o mesmo estilo usado no Builder:
-
----
-
 ## 2. Padrão Abstract Factory
 
 ### Intenção do Padrão 
