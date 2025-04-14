@@ -6,7 +6,7 @@ O jogo da Selva (*Jungle*) é um jogo de tabuleiro inspirado no xadrez, onde ani
 
 ## 1. Padrão Builder
 
-### Intenção do Padrão (conforme Gama)
+### Intenção do Padrão
 Separar a construção de um objeto complexo da sua representação de modo que o
 mesmo processo de construção possa criar diferentes representações.
 
