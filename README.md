@@ -497,7 +497,127 @@ GamePieceProps --> PieceType
 @import "./src/games/jungle/patterns/factory/JungleMoveFactory.java"
 
 
+---
 
+## 5. Padrão Chain of Responsibility
+
+### Intenção do Padrão  
+Evitar o acoplamento do remetente de uma solicitação ao seu receptor, permitindo que mais de um objeto possa tratar a solicitação. Encadeia os objetos receptores e passa a solicitação ao longo da cadeia até que ela seja tratada.
+
+### Motivação  
+No framework de jogos, diferentes peças têm **regras de movimentação compostas** por:
+
+* restrições de território (não entrar na toca inimiga);
+* bloqueios por terreno (água, armadilhas…);
+* alcance máximo;
+* movimentos especiais (pulo sobre rio, etc.).
+
+Se cada tipo de peça precisasse implementar todas as regras diretamente, teríamos **métodos complexos e difíceis de reutilizar**.
+
+Com o padrão **Chain of Responsibility**, cada regra vira um manipulador (`MoveHandler`) independente e reutilizável, que pode ser encadeado de forma flexível para definir o comportamento da peça.
+
+### Cenário sem o Padrão  
+As regras de movimentação estariam todas misturadas em um único método:
+
+```java
+boolean move(Position from, Position to, GameBoard board) {
+    if (board.getCell(to).getType() == WATER) return false;
+    if (!isOwnTerritory(from, to)) return false;
+    if (!canLeapOverRiver(from, to, board)) return false;
+    ...
+    return true;
+}
+```
+
+#### Problemas  
+* Código rígido, difícil de alterar ou extender.  
+* Nenhuma reutilização entre diferentes tipos de peças.  
+* A ordem das verificações precisa ser manualmente mantida.
+
+#### UML sem o padrão  
+```plantuml
+@startuml
+class GamePiece {
+  +move(Position, Position, GameBoard) : boolean
+}
+
+class GameBoard
+class Position
+
+GamePiece --> GameBoard
+GamePiece --> Position
+@enduml
+```
+
+### Estrutura do Padrão  
+![alt text](imgs/chain.png)
+
+### Padrão aplicado no cenário  
+Com o padrão **Chain of Responsibility**, cada validação é implementada como um manipulador (`MoveHandler`). A `JungleMoveFactory` define a cadeia de regras apropriadas para cada tipo de peça, como:
+
+- `Range`: limite de alcance  
+- `WaterBlock`: impede entrada na água  
+- `TerritoryRestriction`: impede entrada na toca inimiga  
+- `LeapOverRiver`: movimento especial do leão e tigre
+
+Cada manipulador decide se processa ou repassa a requisição ao próximo da cadeia.
+
+#### Classes envolvidas  
+- `Move` (interface para movimentação)  
+- `MoveHandler` (classe abstrata da cadeia)  
+- `TerritoryRestriction`, `LeapOverRiver`, `WaterBlock`, `Range` (handlers concretos)  
+- `JungleMoveFactory` (fábrica que monta a cadeia conforme o tipo da peça)
+
+#### UML com o padrão aplicado  
+```plantuml
+@startuml
+interface Move {
+  +move(Position, Position, GameBoard) : boolean
+}
+
+abstract class MoveHandler {
+  +setNext(MoveHandler) : MoveHandler
+  +move(...) : boolean
+  -MoveHandler next
+}
+
+class TerritoryRestriction
+class WaterBlock
+class LeapOverRiver
+class Range
+
+Move <|.. MoveHandler
+MoveHandler <|-- TerritoryRestriction
+MoveHandler <|-- WaterBlock
+MoveHandler <|-- LeapOverRiver
+MoveHandler <|-- Range
+@enduml
+```
+
+### Participantes
+
+| GOF                 | Implementação no Projeto                    |
+|---------------------|---------------------------------------------|
+| **Handler**          | `MoveHandler` – define interface comum      |
+| **ConcreteHandler**  | `Range`, `WaterBlock`, etc. – regras reais |
+| **Client**           | `GamePiece` – delega a verificação à cadeia |
+| **Request**          | `move(from, to, board)` – verificação de movimento |
+
+### Código
+
+#### Código do Framework  
+@import "./src/framework/patterns/chainOfRespo/Move.java"
+
+@import "./src/framework/patterns/chainOfRespo/MoveHandler.java"
+
+#### Código do Jogo Selva  
+@import "./src/games/jungle/patterns/chainOfRespo/TerritoryRestriction.java"
+
+@import "./src/games/jungle/patterns/chainOfRespo/WaterBlock.java"
+
+@import "./src/games/jungle/patterns/chainOfRespo/LeapOverRiver.java"
+
+@import "./src/games/jungle/patterns/chainOfRespo/Range.java"
 
 
 
