@@ -106,7 +106,7 @@ JungleBoardBuilder --> GameBoard
 @enduml
 ```
 
-### Participantes (alinhados ao GOF)
+### Participantes
 
 | GOF               | Implementação no Projeto                       |
 |------------------|-------------------------------------------------|
@@ -242,7 +242,7 @@ GameBoardDirector --> BoardBuilder
 @enduml
 ```
 
-### Participantes (alinhados ao GOF)
+### Participantes
 
 | GOF                  | Implementação no Projeto                               |
 |----------------------|---------------------------------------------------------|
@@ -259,5 +259,126 @@ GameBoardDirector --> BoardBuilder
 #### Código do Jogo Selva
 @import "./src/games/jungle/patterns/abstractFactory/JungleAbstractFactory.java"
 
+
 ---
 
+## 3. Padrão Flyweight
+
+### Intenção do Padrão 
+Usar compartilhamento para suportar eficientemente grandes quantidades de objetos de granularidade fina.
+
+### Motivação  
+No jogo da Selva (e em outros jogos de tabuleiro), diversas peças do mesmo tipo são criadas repetidamente, com comportamento e atributos idênticos (por exemplo, várias peças "Rato", "Tigre", etc.). Se cada instância replicar os mesmos dados (nome, tipo, lógica de movimento…), haverá:
+
+* desperdício de memória;  
+* necessidade de manter cópias redundantes dos mesmos dados.
+
+Com o padrão **Flyweight**, os dados imutáveis e compartilháveis são armazenados em um único objeto (`GamePieceProps`), que é **reutilizado** por todas as instâncias de peças do mesmo tipo.
+
+### Cenário sem o Padrão  
+Sem Flyweight, cada peça armazena seus próprios atributos e lógica de movimentação:
+
+```java
+class JungleGamePiece {
+    private final String name;
+    private final PieceType type;
+    private final Move moveChain;
+
+    public JungleGamePiece(String name, PieceType type) {
+        this.name = name;
+        this.type = type;
+        this.moveChain = JungleMoveFactory.getInstance().createMoveChain(type);
+    }
+
+    public void move(Position dest, GameBoard board) {
+        if (!moveChain.move(getPosition(), dest, board)) {
+            throw new InvalidMovementException("Movimento inválido!");
+        }
+    }
+}
+```
+
+#### Problemas  
+* Cada peça ocupa espaço duplicado com atributos idênticos (nome, tipo, lógica de movimento).  
+* A criação de múltiplas peças torna-se mais custosa em termos de memória.  
+* A lógica de movimentação não é reaproveitada.
+
+#### UML sem o Padrão  
+```plantuml
+@startuml
+class JungleGamePiece {
+  -String name
+  -PieceType type
+  -Move moveChain
+  +move(Position, GameBoard)
+}
+JungleGamePiece --> Move
+@enduml
+```
+
+---
+
+### Estrutura do Padrão  
+![alt text](imgs/flyweight_structure.png)
+
+### Padrão aplicado no cenário  
+Com o Flyweight, criamos um objeto compartilhável e imutável (`GamePieceProps`), contendo os dados comuns a todas as peças de um mesmo tipo. O objeto `GamePiece` passa a receber essa referência e delegar a ela os dados e comportamentos.
+
+O `JungleGamePieceFactory` usa uma `Map` interna (`gamePieceProMap`) para garantir que cada tipo de peça compartilhe o mesmo `GamePieceProps`.
+
+#### Classes envolvidas  
+- `GamePieceProps` – contém os dados compartilhados: tipo da peça, cadeia de movimentos.  
+- `GamePiece` – peça concreta, que usa `GamePieceProps` para delegar comportamentos.  
+- `JungleGamePieceFactory` – responsável por criar e gerenciar instâncias flyweight.  
+- `JungleMoveFactory` – cria a lógica de movimentação para cada tipo de peça.
+
+#### UML com o padrão aplicado  
+```plantuml
+@startuml
+class GamePiece {
+  -GamePieceProps props
+  +move(Position, GameBoard)
+  +getProps() : GamePieceProps
+}
+
+class GamePieceProps {
+  +type : PieceType
+  +moveChain : Move
+}
+
+class JungleGamePieceFactory {
+  -Map<PieceType, GamePieceProps> gamePieceProMap
+  +createGamePiece(PieceType) : GamePiece
+  +createGamePiece(int, PieceType) : List<GamePiece>
+}
+
+GamePiece --> GamePieceProps
+JungleGamePieceFactory --> GamePiece
+JungleGamePieceFactory --> GamePieceProps
+GamePieceProps --> Move
+@enduml
+```
+
+---
+
+### Participantes
+
+| GOF               | Implementação no Projeto                                |
+|------------------|----------------------------------------------------------|
+| **Flyweight**      | `GamePieceProps` – dados compartilháveis entre instâncias |
+| **ConcreteFlyweight** | Instâncias de `GamePieceProps` com atributos definidos por tipo |
+| **FlyweightFactory** | `JungleGamePieceFactory` – gerencia e reaproveita flyweights |
+| **Client**         | `GamePiece` – usa `GamePieceProps` compartilhado |
+
+---
+
+### Código
+
+#### Código do Framework
+@import "./src/framework/patterns/flyweight/GamePiece.java"  
+@import "./src/framework/patterns/flyweight/GamePieceProps.java"
+
+#### Código do Jogo Selva
+@import "./src/games/jungle/patterns/factory/flyweight/JungleGamePieceFactory.java"
+
+---
