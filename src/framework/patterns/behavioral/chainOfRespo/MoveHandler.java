@@ -1,4 +1,4 @@
-package framework.patterns.chainOfRespo;
+package framework.patterns.behavioral.chainOfRespo;
 
 public abstract class MoveHandler implements Move {
     protected MoveHandler next;

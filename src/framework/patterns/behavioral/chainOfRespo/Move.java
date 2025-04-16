@@ -1,6 +1,6 @@
-package framework.patterns.chainOfRespo;
+package framework.patterns.behavioral.chainOfRespo;
 
-import framework.core.GameBoard;
+import framework.patterns.creational.prototype.GameBoard;
 import framework.core.Position;
 
 public interface Move

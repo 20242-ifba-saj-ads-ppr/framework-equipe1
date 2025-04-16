@@ -1,10 +1,11 @@
 package games.jungle.patterns.abstractFactory;
 
 import framework.core.*;
-import framework.patterns.abstractFactory.GameAbstractFactory;
-import framework.patterns.builder.BoardBuilder;
-import framework.patterns.builder.GameBoardDirector;
-import framework.patterns.flyweight.GamePiece;
+import framework.patterns.creational.abstractFactory.GameAbstractFactory;
+import framework.patterns.creational.builder.GameBoardDirector;
+import framework.patterns.structural.flyweight.GamePiece;
+import framework.patterns.creational.prototype.GameBoard;
+import framework.patterns.creational.prototype.Player;
 import games.jungle.core.JunglePieceType;
 import games.jungle.patterns.builder.JungleBoardBuilder;
 import games.jungle.patterns.factory.flyweight.JungleGamePieceFactory;

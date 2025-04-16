@@ -1,7 +1,7 @@
-package framework.patterns.flyweight;
+package framework.patterns.structural.flyweight;
 
 import framework.core.PieceType;
-import framework.patterns.chainOfRespo.Move;
+import framework.patterns.behavioral.chainOfRespo.Move;
 
 
 public record GamePieceProps(

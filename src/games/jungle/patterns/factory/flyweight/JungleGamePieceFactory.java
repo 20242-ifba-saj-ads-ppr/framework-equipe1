@@ -1,10 +1,10 @@
 package games.jungle.patterns.factory.flyweight;
 
 import framework.core.PieceType;
-import framework.patterns.chainOfRespo.Move;
-import framework.patterns.factory.GamePieceFactory;
-import framework.patterns.flyweight.GamePiece;
-import framework.patterns.flyweight.GamePieceProps;
+import framework.patterns.behavioral.chainOfRespo.Move;
+import framework.patterns.creational.factory.GamePieceFactory;
+import framework.patterns.structural.flyweight.GamePiece;
+import framework.patterns.structural.flyweight.GamePieceProps;
 import games.jungle.core.JunglePieceType;
 import games.jungle.patterns.factory.JungleMoveFactory;
 

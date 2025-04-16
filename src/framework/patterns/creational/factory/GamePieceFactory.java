@@ -1,8 +1,8 @@
-package framework.patterns.factory;
+package framework.patterns.creational.factory;
 
 import framework.core.PieceType;
-import framework.patterns.flyweight.GamePiece;
-import framework.patterns.flyweight.GamePieceProps;
+import framework.patterns.structural.flyweight.GamePiece;
+import framework.patterns.structural.flyweight.GamePieceProps;
 
 import java.util.List;
 import java.util.Map;

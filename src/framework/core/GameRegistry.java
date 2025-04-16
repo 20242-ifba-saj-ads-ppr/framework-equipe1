@@ -1,6 +1,6 @@
 package framework.core;
 
-import framework.patterns.abstractFactory.GameAbstractFactory;
+import framework.patterns.creational.abstractFactory.GameAbstractFactory;
 
 import java.util.HashMap;
 import java.util.Map;

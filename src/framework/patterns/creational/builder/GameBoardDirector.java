@@ -1,6 +1,6 @@
-package framework.patterns.builder;
+package framework.patterns.creational.builder;
 
-import framework.core.GameBoard;
+import framework.patterns.creational.prototype.GameBoard;
 
 public class GameBoardDirector {
     private final BoardBuilder builder;

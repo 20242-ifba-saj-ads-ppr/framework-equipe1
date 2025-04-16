@@ -1,6 +1,6 @@
-import framework.core.GameBoard;
-import framework.patterns.builder.BoardBuilder;
-import framework.patterns.builder.GameBoardDirector;
+import framework.patterns.creational.prototype.GameBoard;
+import framework.patterns.creational.builder.BoardBuilder;
+import framework.patterns.creational.builder.GameBoardDirector;
 import games.jungle.patterns.builder.JungleBoardBuilder;
 
 public class App {

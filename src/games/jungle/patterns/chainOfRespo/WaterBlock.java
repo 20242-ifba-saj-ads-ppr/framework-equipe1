@@ -1,8 +1,8 @@
 package games.jungle.patterns.chainOfRespo;
 
-import framework.core.GameBoard;
+import framework.patterns.creational.prototype.GameBoard;
 import framework.core.Position;
-import framework.patterns.chainOfRespo.MoveHandler;
+import framework.patterns.behavioral.chainOfRespo.MoveHandler;
 import games.jungle.core.JungleCellType;
 
 public class WaterBlock extends MoveHandler {

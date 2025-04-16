@@ -1,7 +1,7 @@
 package games.jungle.patterns.factory;
 
-import framework.patterns.chainOfRespo.MoveHandler;
-import framework.patterns.chainOfRespo.Move;
+import framework.patterns.behavioral.chainOfRespo.MoveHandler;
+import framework.patterns.behavioral.chainOfRespo.Move;
 import games.jungle.core.JunglePieceType;
 
 public abstract class AbstractJungleMoveFactory {
