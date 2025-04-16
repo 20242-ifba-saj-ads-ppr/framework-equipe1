@@ -862,7 +862,7 @@ HistoryManager --> GameMemento
 
 ## 8. Padrão Singleton
 
-### Intenção do Padrão (conforme Gama)  
+### Intenção do Padrão 
 Garantir que uma classe tenha **apenas uma instância** e fornecer um **ponto global de acesso** a ela.
 
 ### Motivação  
@@ -947,5 +947,333 @@ GameManager --> Player
 #### Código do Framework
 @import "./src/framework/patterns/creational/singleton/GameManager.java"
 
+---
+
+## 9. Padrão Prototype
+
+### Intenção do Padrão 
+Especificar os tipos de objetos a serem criados usando uma **instância prototípica** e criar novos objetos pela **cópia desse protótipo**.
+
+### Motivação  
+Em jogos de tabuleiro, muitas ações dependem da criação de **cópias profundas do estado atual do jogo** — por exemplo, ao salvar o estado para *undo*, ou ao simular movimentos.
+
+Criar um novo tabuleiro com todas as células e peças manualmente seria trabalhoso e propenso a erros. Com o padrão **Prototype**, é possível clonar facilmente objetos complexos como `GameBoard` e `Player`, preservando suas configurações e estruturas internas.
+
+### Cenário sem o padrão  
+Criar cópias manuais exigiria reconstruir todos os componentes:
+
+```java
+GameBoard clone = new GameBoard(orig.getWidth(), orig.getHeight());
+for (...) {
+    clone.setCellType(...);
+}
+for (GamePiece p : orig.getPieces()) {
+    clone.placePiece(new GamePiece(p.getType(), ...), ...);
+}
+```
+
+#### Problemas  
+* Alto custo de manutenção;  
+* Risco de esquecer atributos importantes;  
+* Falta de generalização da lógica de cópia.
+
+#### UML sem o padrão  
+```plantuml
+@startuml
+class GameBoard {
+  +GameBoard()
+  +setPieces()
+  +placePiece()
+}
+
+class Player {
+  +Player()
+  +setPieces()
+}
+
+GameBoard --> Player
+@enduml
+```
+
+### Estrutura do padrão  
+![alt text](imgs/prototype.png)
+
+### Padrão aplicado no cenário  
+Com o padrão **Prototype**, tanto o `GameBoard` quanto o `Player` implementam a interface `GamePrototype<T>`, que define o método `clone()`.
+
+Além disso, ambos implementam a interface `ClonePieces<T>`, que permite realizar clonagem com **cache de peças**, evitando duplicações inconsistentes.
+
+#### Classes envolvidas  
+- `GamePrototype<T>` – interface base para objetos clonáveis  
+- `ClonePieces<T>` – interface complementar para clonagem com cache de peças  
+- `GameBoard`, `Player` – implementações concretas do protótipo  
+- `GamePiece` – peça do jogo, também clonável (via Flyweight + cache)
+
+#### UML com o padrão aplicado  
+```plantuml
+@startuml
+interface GamePrototype<T> {
+  +clone() : T
+}
+
+interface ClonePieces<T> {
+  +cloneWithCache(Map) : T
+}
+
+class GameBoard {
+  -width : int
+  -height : int
+  -cells : Map
+  -pieces : List<GamePiece>
+  +clone()
+  +cloneWithCache()
+}
+
+class Player {
+  -id : String
+  -pieces : List<GamePiece>
+  +clone()
+  +cloneWithCache()
+}
+
+GameBoard ..|> GamePrototype
+Player ..|> GamePrototype
+
+GameBoard ..|> ClonePieces
+Player ..|> ClonePieces
+@enduml
+```
+
+### Participantes 
+
+| GOF               | Implementação no Projeto                      |
+|------------------|-----------------------------------------------|
+| **Prototype**      | `GamePrototype<T>` – interface de clonagem genérica |
+| **ConcretePrototype** | `GameBoard`, `Player` – implementam cópias profundas específicas |
+| **Client**         | `HistoryManager`, `GameManager`, entre outros que requisitam cópias |
+
+### Código
+
+#### Código do Framework
+@import "./src/framework/patterns/creational/prototype/GamePrototype.java"  
+@import "./src/framework/patterns/creational/prototype/ClonePieces.java"  
+@import "./src/framework/patterns/creational/prototype/GameBoard.java"  
+@import "./src/framework/patterns/creational/prototype/Player.java"
+
+---
+
+## 10. Padrão Facade
+
+### Intenção do Padrão 
+Fornecer uma **interface unificada** para um **conjunto de interfaces** em um subsistema. **Facade** define uma interface de nível mais alto que torna o subsistema mais fácil de usar.
+
+### Motivação  
+Em jogos de tabuleiro digitais, o gerenciamento da lógica de jogo envolve múltiplas operações de diferentes partes do sistema: movimentação, troca de turno, desfazer ações, histórico, controle de peças e jogadores, etc.
+
+A classe `GameSession` atua como **fachada**, encapsulando toda essa complexidade e expondo uma interface simples (`IGameSession`) para o restante do sistema (por exemplo, `GameManager` ou a interface do usuário).
+
+### Cenário sem o padrão  
+Sem o padrão Facade, o código que gerencia a lógica do jogo precisaria se comunicar diretamente com várias classes:
+
+```java
+GameBoard board = factory.createGameBoard();
+List<Player> players = factory.createPlayers();
+List<GamePiece> pieces = factory.createGamePieces();
+
+board.setPieces(pieces);
+// distribuir peças manualmente...
+// criar comandos e gerenciar histórico...
+```
+
+#### Problemas  
+* Código duplicado e acoplado  
+* Aumento da complexidade para usuários do subsistema  
+* Dificuldade de manutenção e testes
+
+#### UML sem o padrão  
+```plantuml
+@startuml
+class GameBoard
+class Player
+class GamePiece
+class HistoryManager
+class GameAbstractFactory
+
+GameBoard --> GamePiece
+GamePiece --> Position
+Player --> GamePiece
+@enduml
+```
+
+### Estrutura do padrão  
+![alt text](imgs/facade.png)
+
+### Padrão aplicado no cenário  
+A classe `GameSession` encapsula toda a lógica necessária para a execução de um jogo:  
+- Inicializa tabuleiro, peças e jogadores  
+- Executa comandos (mover, passar turno)  
+- Gerencia histórico de ações (memento)  
+- Permite desfazer comandos  
+- Garante encapsulamento e simplicidade para quem consome o sistema
+
+A interface `IGameSession` é utilizada por clientes como o `GameManager`, ocultando os detalhes internos.
+
+#### Classes envolvidas  
+- `GameSession` – a fachada, que centraliza e abstrai a lógica do jogo  
+- `GameBoard`, `Player`, `GamePiece`, `GameCommand`, `HistoryManager`, etc. – subsistema encapsulado  
+- `IGameSession` – interface externa exposta ao cliente (como o `GameManager`)
+
+#### UML com o padrão aplicado  
+```plantuml
+@startuml
+interface IGameSession {
+  +move(from, to)
+  +passTurn()
+  +undo()
+  +board()
+  +currentPlayer()
+}
+
+class GameSession {
+  -GameBoard gameBoard
+  -List<Player> players
+  -HistoryManager history
+  +move()
+  +passTurn()
+  +undo()
+  +board()
+  +currentPlayer()
+}
+
+GameSession ..|> IGameSession
+
+IGameSession <|.. GameManager
+GameSession --> GameBoard
+GameSession --> Player
+GameSession --> HistoryManager
+GameSession --> GameCommand
+@enduml
+```
+
+### Participantes 
+
+| GOF           | Implementação no Projeto       |
+|----------------|------------------------------|
+| **Facade**       | `GameSession`                  |
+| **Subsistemas**  | `GameBoard`, `Player`, `GameCommand`, `HistoryManager`, etc. |
+| **Cliente**      | `GameManager` e demais chamadas externas |
+
+### Código
+
+#### Código do Framework
+@import "./src/framework/patterns/structural/facade/GameSession.java"  
+@import "./src/framework/patterns/structural/proxy/IGameSession.java"
+
+---
+
+
+## 11. Padrão Proxy
+
+### Intenção do Padrão 
+Fornecer um **representante ou substituto** para outro objeto para controlar o acesso a ele.
+
+### Motivação  
+Em jogos multiplayer, é essencial restringir ações para que apenas o jogador da vez possa movimentar peças, passar o turno ou desfazer jogadas. O padrão **Proxy** oferece uma camada de proteção, impedindo que outros jogadores acessem métodos indevidamente.
+
+Neste projeto, `GameSessionProxy` atua como um intermediário entre o jogador e a `GameSession`, garantindo que apenas o jogador autorizado (com ID válido) execute ações.
+
+### Cenário sem o padrão  
+Sem o proxy, qualquer jogador teria acesso direto à `GameSession`, podendo executar comandos indevidamente:
+
+```java
+gameSession.move(posA, posB); // Qualquer jogador
+gameSession.undo();           // Pode causar conflitos de estado
+```
+
+#### Problemas  
+* Falta de controle de acesso  
+* Ações fora do turno permitidas  
+* Quebra de regras do jogo
+
+#### UML sem o padrão  
+```plantuml
+@startuml
+class GameSession {
+  +move()
+  +passTurn()
+  +undo()
+  +board()
+  +currentPlayer()
+}
+GameManager --> GameSession
+@enduml
+```
+
+### Estrutura do padrão  
+![alt text](imgs/proxy.png)
+
+### Padrão aplicado no cenário  
+A interface `IGameSession` abstrai o contrato da sessão de jogo.  
+`GameSessionProxy` implementa essa interface e **verifica se o jogador atual tem permissão para executar a ação** antes de delegar para a `GameSession`.
+
+#### Benefícios  
+* Controle de acesso em tempo de execução  
+* Transparência para quem usa a interface (`IGameSession`)  
+* Encapsulamento das regras de autorização
+
+#### Classes envolvidas  
+- `IGameSession` – interface comum para sessão real e proxy  
+- `GameSessionProxy` – o proxy que valida permissões  
+- `GameSession` – a sessão real que executa as ações  
+- `GameManager` – cliente que interage apenas com a interface
+
+#### UML com o padrão aplicado  
+```plantuml
+@startuml
+interface IGameSession {
+  +move()
+  +undo()
+  +passTurn()
+  +board()
+  +currentPlayer()
+}
+
+class GameSession {
+  +move()
+  +undo()
+  +passTurn()
+  +board()
+  +currentPlayer()
+}
+
+class GameSessionProxy {
+  -GameSession realSession
+  -String allowedPlayerId
+  +move()
+  +undo()
+  +passTurn()
+}
+
+IGameSession <|.. GameSession
+IGameSession <|.. GameSessionProxy
+
+GameManager --> IGameSession
+GameSessionProxy --> GameSession
+@enduml
+```
+
+### Participantes
+
+| GOF         | Implementação no Projeto     |
+|-------------|------------------------------|
+| **Subject**     | `IGameSession`               |
+| **Proxy**       | `GameSessionProxy`           |
+| **RealSubject** | `GameSession`                |
+
+### Código
+
+#### Código do Framework
+@import "./src/framework/patterns/structural/proxy/GameSessionProxy.java"  
+@import "./src/framework/patterns/structural/proxy/IGameSession.java"
 
 
