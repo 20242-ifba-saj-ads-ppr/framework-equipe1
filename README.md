@@ -619,5 +619,333 @@ MoveHandler <|-- Range
 
 @import "./src/games/jungle/patterns/chainOfRespo/Range.java"
 
+---
+
+## 6. Padrão Command
+
+### Intenção do Padrão 
+Encapsular uma solicitação como um objeto, permitindo parametrizar clientes com diferentes solicitações, enfileirar ou registrar solicitações e suportar operações que podem ser desfeitas.
+
+### Motivação  
+No framework de jogos de tabuleiro, uma jogada pode envolver diversas ações, como:
+
+* mover uma peça;
+* capturar outra peça;
+* passar a vez;
+* futuramente, desfazer uma jogada.
+
+Essas ações devem ser registradas e executadas de forma uniforme, permitindo que o jogo:
+
+* armazene o histórico das jogadas;
+* desacople a lógica de execução da interface de usuário;
+* permita futuramente *undo/redo* de comandos.
+
+O **Command** encapsula cada jogada como um objeto autônomo, com uma interface comum (`execute()`), delegando ao objeto o conhecimento de **como** realizar sua ação.
+
+### Cenário sem o Padrão  
+O jogo teria que executar cada tipo de jogada diretamente:
+
+```java
+// mover
+GamePiece piece = board.getPieceAt(from);
+piece.move(to, board);
+
+// capturar
+GamePiece captured = board.getPieceAt(to);
+board.getPieces().remove(captured);
+```
+
+#### Problemas  
+* Código repetido para cada tipo de jogada;  
+* Difícil manter histórico de ações para desfazer;  
+* Sem encapsulamento da ação: controller e lógica do jogo ficam acoplados.
+
+#### UML sem o padrão  
+```plantuml
+@startuml
+class Game {
+  +movePiece(Position, Position)
+  +capturePiece(Position)
+  +passTurn()
+}
+
+class GameBoard
+class GamePiece
+
+Game --> GameBoard
+GameBoard --> GamePiece
+@enduml
+```
+
+### Estrutura do padrão  
+![alt text](imgs/command.png)
+
+### Padrão aplicado no cenário  
+Com o padrão **Command**, cada ação é transformada em um comando que implementa a interface `GameCommand`. Isso permite:
+
+* guardar as ações em lista para refazer ou desfazer;
+* executar comandos de forma polimórfica;
+* associar comandos a botões ou eventos de forma desacoplada.
+
+#### Classes envolvidas  
+- `GameCommand` (interface comum)  
+- `MoveCommand`, `CapturePieceCommand`, `PassTurnCommand` (comandos concretos)  
+- `GameBoard`, `GamePiece` – usadas dentro dos comandos para executar ações
+
+#### UML com o padrão aplicado  
+```plantuml
+@startuml
+interface GameCommand {
+  +execute()
+}
+
+class MoveCommand {
+  -Position from, to
+  -GamePiece piece
+  +execute()
+}
+
+class CapturePieceCommand {
+  -Position target
+  -GamePiece captured
+  +execute()
+}
+
+class PassTurnCommand {
+  +execute()
+}
+
+GameCommand <|.. MoveCommand
+GameCommand <|.. CapturePieceCommand
+GameCommand <|.. PassTurnCommand
+@enduml
+```
+
+### Participantes 
+
+| GOF             | Implementação no Projeto                                      |
+|----------------|---------------------------------------------------------------|
+| **Command**      | `GameCommand` – define a interface para todos os comandos     |
+| **ConcreteCommand** | `MoveCommand`, `CapturePieceCommand`, `PassTurnCommand` – implementam ações específicas |
+| **Receiver**     | `GameBoard`, `GamePiece` – objetos que executam as ações      |
+| **Invoker**      | (implícito – pode ser o controller do jogo ou gerenciador de turnos) |
+| **Client**       | Código do jogo – instancia e executa comandos                 |
+
+### Código
+
+#### Código do Framework
+@import "./src/framework/patterns/behavioral/command/GameCommand.java"
+
+@import "./src/framework/patterns/behavioral/command/MoveCommand.java"
+
+@import "./src/framework/patterns/behavioral/command/CapturePieceCommand.java"
+
+@import "./src/framework/patterns/behavioral/command/PassTurnCommand.java"
+
+---
+
+## 7. Padrão Memento
+
+### Intenção do Padrão 
+Sem violar o encapsulamento, capturar e externalizar o estado interno de um objeto para que ele possa ser restaurado posteriormente.
+
+### Motivação  
+Em jogos de tabuleiro, é comum o jogador querer **voltar uma jogada**, por exemplo:
+
+* desfazer um movimento mal planejado;
+* corrigir um erro;
+* testar possibilidades diferentes.
+
+No entanto, o estado do jogo é composto por elementos complexos: **tabuleiro**, **jogadores**, **peças**, **vez atual**, etc.  
+O padrão **Memento** permite capturar esse estado de forma encapsulada, sem expor detalhes da implementação interna.
+
+### Cenário sem o padrão  
+O código teria que salvar e restaurar o estado manualmente:
+
+```java
+// salvar estado
+savedBoard = board.clone();
+savedPlayers = clonePlayers(players);
+savedTurn = currentTurn;
+
+// restaurar
+board = savedBoard;
+players = savedPlayers;
+currentTurn = savedTurn;
+```
+
+#### Problemas  
+* Lógica de backup se espalha pelo código;  
+* Forte acoplamento entre componentes do jogo e armazenamento de estado;  
+* Alto risco de esquecer alguma parte do estado a ser salva/restaurada.
+
+#### UML sem o padrão  
+```plantuml
+@startuml
+class Game {
+  -GameBoard board
+  -List<Player> players
+  -int turn
+
+  +saveState()
+  +restoreState(...)
+}
+@enduml
+```
+
+### Estrutura do padrão  
+![alt text](imgs/memento.png)
+
+### Padrão aplicado no cenário  
+Com o padrão **Memento**, o jogo (Originator) sabe como salvar/restaurar seu estado, enquanto o `HistoryManager` (Caretaker) é responsável por armazenar esses estados ao longo do tempo.
+
+#### Classes envolvidas  
+- `Originator<T>` – interface para objetos que sabem salvar/restaurar estado  
+- `GameMemento` – representa um snapshot completo do jogo  
+- `HistoryManager` – armazena os mementos anteriores e permite desfazer  
+- `Caretaker<T>` – define as operações de backup e undo
+
+#### UML com o padrão aplicado  
+```plantuml
+@startuml
+interface Originator<T> {
+  +saveState() : T
+  +restoreState(T memento)
+}
+
+interface Caretaker<T> {
+  +backup(Originator<T>)
+  +undo(Originator<T>)
+  +hasHistory() : boolean
+}
+
+class GameMemento {
+  -GameBoard boardSnapshot
+  -List<Player> playerSnapshot
+  -int turn
+}
+
+class HistoryManager {
+  -Deque<GameMemento> history
+  +backup()
+  +undo()
+  +hasHistory()
+}
+
+Caretaker <|.. HistoryManager
+Originator --> GameMemento
+HistoryManager --> GameMemento
+@enduml
+```
+
+### Participantes
+
+| GOF              | Implementação no Projeto                        |
+|------------------|--------------------------------------------------|
+| **Originator**     | Implementação concreta do jogo, via `Originator<GameMemento>` |
+| **Memento**        | `GameMemento` – encapsula o estado do tabuleiro, jogadores e turno |
+| **Caretaker**      | `HistoryManager` – guarda os mementos e controla o histórico |
+| **Client**         | Código do jogo – solicita backup ou restauração |
+
+### Código
+
+#### Código do Framework
+@import "./src/framework/patterns/behavioral/memento/Originator.java"
+
+@import "./src/framework/patterns/behavioral/memento/Caretaker.java"
+
+@import "./src/framework/patterns/behavioral/memento/GameMemento.java"
+
+@import "./src/framework/patterns/behavioral/memento/HistoryManager.java"
+
+---
+
+## 8. Padrão Singleton
+
+### Intenção do Padrão (conforme Gama)  
+Garantir que uma classe tenha **apenas uma instância** e fornecer um **ponto global de acesso** a ela.
+
+### Motivação  
+No framework de jogos, é necessário manter um único ponto de controle da partida em andamento. Essa responsabilidade é atribuída ao `GameManager`, que:
+
+* centraliza o acesso ao jogo atual;
+* gerencia a instância da `GameSession` (e seu proxy);
+* permite executar ações como **mover**, **passar turno**, **desfazer**.
+
+Usar o padrão **Singleton** garante que **haverá apenas um `GameManager` ativo por aplicação**, evitando conflitos de estado.
+
+### Cenário sem o padrão  
+A criação do gerenciador ficaria solta na aplicação:
+
+```java
+GameManager manager1 = new GameManager();  
+GameManager manager2 = new GameManager();  
+manager1.move(...);  
+manager2.undo(); // estados diferentes!
+```
+
+#### Problemas  
+* Múltiplas instâncias com dados divergentes;  
+* Difícil coordenar ações entre partes do sistema;  
+* Possível sobreposição ou perda de dados.
+
+#### UML sem o padrão  
+```plantuml
+@startuml
+class GameManager {
+  +move()
+  +undo()
+  +start()
+}
+@enduml
+```
+
+### Estrutura do padrão  
+![alt text](imgs/singleton.png)
+
+### Padrão aplicado no cenário  
+Com o padrão **Singleton**, a classe `GameManager`:
+
+* possui um construtor privado;  
+* armazena uma instância estática de si mesma;  
+* fornece um método `getInstance()` para acesso controlado.
+
+#### Classes envolvidas  
+- `GameManager` – classe Singleton que centraliza toda a lógica da partida
+
+#### UML com o padrão aplicado  
+```plantuml
+@startuml
+class GameManager {
+  -static INSTANCE : GameManager
+  -factories : Map
+  -currentSession : IGameSession
+  -GameManager()  // construtor privado
+  +getInstance() : GameManager
+  +start()
+  +move()
+  +undo()
+  +passTurn()
+  +board() : GameBoard
+  +currentPlayer() : Player
+}
+
+GameManager --> IGameSession
+GameManager --> GameBoard
+GameManager --> Player
+@enduml
+```
+
+### Participantes
+
+| GOF              | Implementação no Projeto                      |
+|------------------|-----------------------------------------------|
+| **Singleton**     | `GameManager` – garante uma instância única da gerência de jogo |
+
+### Código
+
+#### Código do Framework
+@import "./src/framework/patterns/creational/singleton/GameManager.java"
+
 
 
