@@ -119,9 +119,9 @@ JungleBoardBuilder --> GameBoard
 
 
 #### Código do Framework
-@import "./src/framework/patterns/builder/BoardBuilder.java"
+@import "./src/framework/patterns/creational/builder/BoardBuilder.java"
 
-@import "./src/framework/patterns/builder/GameBoardDirector.java"
+@import "./src/framework/patterns/creational/builder/GameBoardDirector.java"
 
 #### Código do Jogo Selva
 @import "./src/games/jungle/patterns/builder/JungleBoardBuilder.java"
@@ -254,7 +254,7 @@ GameBoardDirector --> BoardBuilder
 ### Código
 
 #### Código do Framework
-@import "./src/framework/patterns/abstractFactory/GameAbstractFactory.java"
+@import "./src/framework/patterns/creational/abstractFactory/GameAbstractFactory.java"
 
 #### Código do Jogo Selva
 @import "./src/games/jungle/patterns/abstractFactory/JungleAbstractFactory.java"
@@ -371,8 +371,8 @@ GamePieceProps --> Move
 ### Código
 
 #### Código do Framework
-@import "./src/framework/patterns/flyweight/GamePiece.java"  
-@import "./src/framework/patterns/flyweight/GamePieceProps.java"
+@import "./src/framework/patterns/structural/flyweight/GamePiece.java"  
+@import "./src/framework/patterns/structural/flyweight/GamePieceProps.java"
 
 #### Código do Jogo Selva
 @import "./src/games/jungle/patterns/factory/flyweight/JungleGamePieceFactory.java"
@@ -490,7 +490,7 @@ GamePieceProps --> PieceType
 ### Código
 
 #### Código do Framework  
-@import "./src/framework/patterns/factory/GamePieceFactory.java"
+@import "./src/framework/patterns/creational/factory/GamePieceFactory.java"
 
 #### Código do Jogo Selva  
 @import "./src/games/jungle/patterns/factory/JungleGamePieceFactory.java"  
@@ -606,9 +606,9 @@ MoveHandler <|-- Range
 ### Código
 
 #### Código do Framework  
-@import "./src/framework/patterns/chainOfRespo/Move.java"
+@import "./src/framework/patterns/behavioral/chainOfRespo/Move.java"
 
-@import "./src/framework/patterns/chainOfRespo/MoveHandler.java"
+@import "./src/framework/patterns/behavioral/chainOfRespo/MoveHandler.java"
 
 #### Código do Jogo Selva  
 @import "./src/games/jungle/patterns/chainOfRespo/TerritoryRestriction.java"
