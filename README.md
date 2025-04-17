@@ -222,16 +222,16 @@ Cada jogo, como o Jogo da Selva, implementa essa interface em uma fábrica concr
 ```plantuml
 @startuml
 interface GameAbstractFactory {
-  +createGamePieces(Map<PieceType, Integer>) : List<GamePiece>
-  +createGameBoard(BoardBuilder) : GameBoard
+  +createGamePieces() : List<GamePiece>
+  +createGameBoard() : GameBoard
   +createPlayers() : List<Player>
 }
 
 class JungleAbstractFactory {
   -JungleGamePieceFactory gamePieceFactory
   -GameBoardDirector gameBoardDirector
-  +createGamePieces(Map) : List<GamePiece>
-  +createGameBoard(BoardBuilder) : GameBoard
+  +createGamePieces() : List<GamePiece>
+  +createGameBoard() : GameBoard
   +createPlayers() : List<Player>
 }
 
