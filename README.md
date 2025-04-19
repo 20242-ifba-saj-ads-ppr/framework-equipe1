@@ -53,19 +53,27 @@ class JungleGame {
 #### UML sem o Padrão
 ```plantuml
 @startuml
-class JungleGame {
-  +init()
-  -GameBoard board
-}
+object jungleGame
+object board
+object cell1
+object cell2
+object position1
+object position2
 
-class GameBoard
-class Cell
-class Position
+jungleGame : JungleGame
+board : GameBoard
+cell1 : Cell
+cell2 : Cell
+position1 : Position(x=0, y=0)
+position2 : Position(x=1, y=0)
 
-JungleGame --> GameBoard
-GameBoard --> Cell
-Cell --> Position
+jungleGame --> board
+board --> cell1
+board --> cell2
+cell1 --> position1
+cell2 --> position2
 @enduml
+
 ```
 
 ### Estrutura do padrão
@@ -332,6 +340,7 @@ O `JungleGamePieceFactory` usa uma `Map` interna (`gamePieceProMap`) para garant
 - `JungleMoveFactory` – cria a lógica de movimentação para cada tipo de peça.
 
 #### UML com o padrão aplicado  
+
 ```plantuml
 @startuml
 class GamePiece {
@@ -493,7 +502,7 @@ GamePieceProps --> PieceType
 @import "./src/framework/patterns/creational/factory/GamePieceFactory.java"
 
 #### Código do Jogo Selva  
-@import "./src/games/jungle/patterns/factory/JungleGamePieceFactory.java"  
+@import "./src/games/jungle/patterns/factory/AbstractJungleMoveFactory.java"  
 @import "./src/games/jungle/patterns/factory/JungleMoveFactory.java"
 
 
@@ -744,9 +753,13 @@ GameCommand <|.. PassTurnCommand
 
 ---
 
+Aqui está a **nova versão da seção do padrão Memento**, atualizada conforme sua implementação:
+
+---
+
 ## 7. Padrão Memento
 
-### Intenção do Padrão 
+### Intenção do Padrão  
 Sem violar o encapsulamento, capturar e externalizar o estado interno de um objeto para que ele possa ser restaurado posteriormente.
 
 ### Motivação  
@@ -756,35 +769,31 @@ Em jogos de tabuleiro, é comum o jogador querer **voltar uma jogada**, por exem
 * corrigir um erro;
 * testar possibilidades diferentes.
 
-No entanto, o estado do jogo é composto por elementos complexos: **tabuleiro**, **jogadores**, **peças**, **vez atual**, etc.  
-O padrão **Memento** permite capturar esse estado de forma encapsulada, sem expor detalhes da implementação interna.
+Em vez de clonar todo o tabuleiro e jogadores, o sistema armazena apenas o estado **essencial da jogada**: peça movimentada, posição anterior, posição atual e turno. Essa abordagem é mais leve e eficiente.
 
 ### Cenário sem o padrão  
-O código teria que salvar e restaurar o estado manualmente:
+O estado teria que ser salvo manualmente em diferentes estruturas:
 
 ```java
-// salvar estado
-savedBoard = board.clone();
-savedPlayers = clonePlayers(players);
-savedTurn = currentTurn;
-
-// restaurar
-board = savedBoard;
-players = savedPlayers;
-currentTurn = savedTurn;
+GamePiece piece = board.getPieceAt(from);
+savedPiece = piece;
+savedFrom = from;
+savedTo = to;
+savedTurn = turn;
 ```
 
 #### Problemas  
-* Lógica de backup se espalha pelo código;  
-* Forte acoplamento entre componentes do jogo e armazenamento de estado;  
-* Alto risco de esquecer alguma parte do estado a ser salva/restaurada.
+* Backup espalhado e não coeso;  
+* Risco de inconsistência entre as variáveis salvas;  
+* Dificuldade de encapsular e restaurar corretamente o estado.
 
 #### UML sem o padrão  
 ```plantuml
 @startuml
 class Game {
-  -GameBoard board
-  -List<Player> players
+  -GamePiece lastMoved
+  -Position from
+  -Position to
   -int turn
 
   +saveState()
@@ -797,13 +806,16 @@ class Game {
 ![alt text](imgs/memento.png)
 
 ### Padrão aplicado no cenário  
-Com o padrão **Memento**, o jogo (Originator) sabe como salvar/restaurar seu estado, enquanto o `HistoryManager` (Caretaker) é responsável por armazenar esses estados ao longo do tempo.
+O padrão **Memento** é usado para capturar apenas as informações **mínimas e relevantes** da jogada. A `GameSession` atua como Originator e implementa `saveState()` e `restoreState()`.
+
+Cada memento (`GameMemento`) armazena a peça movida, a posição anterior, a nova posição e o turno. O `HistoryManager` (Caretaker) mantém uma pilha desses mementos e permite desfazer ações anteriores.
 
 #### Classes envolvidas  
-- `Originator<T>` – interface para objetos que sabem salvar/restaurar estado  
-- `GameMemento` – representa um snapshot completo do jogo  
-- `HistoryManager` – armazena os mementos anteriores e permite desfazer  
-- `Caretaker<T>` – define as operações de backup e undo
+- `Originator<T>` – interface que define `saveState()` e `restoreState()`  
+- `GameSession` – origem do estado, que sabe como criar e restaurar mementos  
+- `GameMemento` – encapsula os dados essenciais da jogada  
+- `HistoryManager` – armazena e gerencia os mementos  
+- `Caretaker<T>` – interface para gerenciar o histórico
 
 #### UML com o padrão aplicado  
 ```plantuml
@@ -820,8 +832,9 @@ interface Caretaker<T> {
 }
 
 class GameMemento {
-  -GameBoard boardSnapshot
-  -List<Player> playerSnapshot
+  -GamePiece piece
+  -Position previous
+  -Position current
   -int turn
 }
 
@@ -840,12 +853,12 @@ HistoryManager --> GameMemento
 
 ### Participantes
 
-| GOF              | Implementação no Projeto                        |
-|------------------|--------------------------------------------------|
-| **Originator**     | Implementação concreta do jogo, via `Originator<GameMemento>` |
-| **Memento**        | `GameMemento` – encapsula o estado do tabuleiro, jogadores e turno |
-| **Caretaker**      | `HistoryManager` – guarda os mementos e controla o histórico |
-| **Client**         | Código do jogo – solicita backup ou restauração |
+| GOF              | Implementação no Projeto                          |
+|------------------|----------------------------------------------------|
+| **Originator**     | `GameSession`, via `Originator<GameMemento>`       |
+| **Memento**        | `GameMemento` – contém peça, posições e turno       |
+| **Caretaker**      | `HistoryManager` – controla o histórico de jogadas |
+| **Client**         | `GameSession` – solicita backup e restauração       |
 
 ### Código
 
@@ -858,7 +871,10 @@ HistoryManager --> GameMemento
 
 @import "./src/framework/patterns/behavioral/memento/HistoryManager.java"
 
+@import "./src/framework/patterns/structural/facade/GameSession.java"
+
 ---
+
 
 ## 8. Padrão Singleton
 
@@ -949,49 +965,40 @@ GameManager --> Player
 
 ---
 
+Aqui está a nova versão da seção do **Padrão Prototype**, atualizada conforme a sua implementação:
+
+---
+
 ## 9. Padrão Prototype
 
-### Intenção do Padrão 
+### Intenção do Padrão  
 Especificar os tipos de objetos a serem criados usando uma **instância prototípica** e criar novos objetos pela **cópia desse protótipo**.
 
 ### Motivação  
-Em jogos de tabuleiro, muitas ações dependem da criação de **cópias profundas do estado atual do jogo** — por exemplo, ao salvar o estado para *undo*, ou ao simular movimentos.
-
-Criar um novo tabuleiro com todas as células e peças manualmente seria trabalhoso e propenso a erros. Com o padrão **Prototype**, é possível clonar facilmente objetos complexos como `GameBoard` e `Player`, preservando suas configurações e estruturas internas.
+Ao desfazer jogadas ou simular ações no jogo, é necessário **reproduzir o estado atual de peças, posições e entidades móveis** de forma confiável.  
+Em vez de reconstruir manualmente, usamos o padrão **Prototype** para clonar objetos como `Position` e `GamePiece`.
 
 ### Cenário sem o padrão  
-Criar cópias manuais exigiria reconstruir todos os componentes:
+Cada elemento teria que implementar cópia manualmente:
 
 ```java
-GameBoard clone = new GameBoard(orig.getWidth(), orig.getHeight());
-for (...) {
-    clone.setCellType(...);
-}
-for (GamePiece p : orig.getPieces()) {
-    clone.placePiece(new GamePiece(p.getType(), ...), ...);
-}
+Position newPos = new Position(old.x(), old.y());
+GamePiece newPiece = new GamePiece(old.getProps());
+newPiece.setPosition(newPos);
 ```
 
 #### Problemas  
-* Alto custo de manutenção;  
-* Risco de esquecer atributos importantes;  
-* Falta de generalização da lógica de cópia.
+* Código repetitivo e propenso a erros;  
+* Risco de esquecer partes internas (como `props` ou `position`);  
+* Dificuldade para aplicar cache ou controle de referência.
 
 #### UML sem o padrão  
 ```plantuml
 @startuml
-class GameBoard {
-  +GameBoard()
-  +setPieces()
-  +placePiece()
-}
+class Position
+class GamePiece
 
-class Player {
-  +Player()
-  +setPieces()
-}
-
-GameBoard --> Player
+GamePiece --> Position
 @enduml
 ```
 
@@ -999,15 +1006,14 @@ GameBoard --> Player
 ![alt text](imgs/prototype.png)
 
 ### Padrão aplicado no cenário  
-Com o padrão **Prototype**, tanto o `GameBoard` quanto o `Player` implementam a interface `GamePrototype<T>`, que define o método `clone()`.
-
-Além disso, ambos implementam a interface `ClonePieces<T>`, que permite realizar clonagem com **cache de peças**, evitando duplicações inconsistentes.
+Os objetos `Position` e `GamePiece` implementam a interface `GamePrototype<T>`, com o método `clone()`.  
+Além disso, `GamePiece` implementa `ClonePieces<T>` para suportar **cache de clonagem**, o que evita a duplicação de instâncias já clonadas — essencial em jogos com múltiplas referências compartilhadas.
 
 #### Classes envolvidas  
-- `GamePrototype<T>` – interface base para objetos clonáveis  
-- `ClonePieces<T>` – interface complementar para clonagem com cache de peças  
-- `GameBoard`, `Player` – implementações concretas do protótipo  
-- `GamePiece` – peça do jogo, também clonável (via Flyweight + cache)
+- `GamePrototype<T>` – interface de clonagem genérica  
+- `ClonePieces<T>` – interface para clonagem com cache  
+- `Position` – posição no tabuleiro (imutável, mas clonável)  
+- `GamePiece` – peça do jogo, com `GamePieceProps` reutilizáveis (Flyweight)
 
 #### UML com o padrão aplicado  
 ```plantuml
@@ -1020,45 +1026,42 @@ interface ClonePieces<T> {
   +cloneWithCache(Map) : T
 }
 
-class GameBoard {
-  -width : int
-  -height : int
-  -cells : Map
-  -pieces : List<GamePiece>
-  +clone()
-  +cloneWithCache()
+class Position {
+  -x : int
+  -y : int
+  +clone() : Position
 }
 
-class Player {
-  -id : String
-  -pieces : List<GamePiece>
-  +clone()
-  +cloneWithCache()
+class GamePiece {
+  -props : GamePieceProps
+  -position : Position
+  +clone() : GamePiece
+  +cloneWithCache(Map) : GamePiece
 }
 
-GameBoard ..|> GamePrototype
-Player ..|> GamePrototype
-
-GameBoard ..|> ClonePieces
-Player ..|> ClonePieces
+GamePrototype <|.. Position
+GamePrototype <|.. GamePiece
+ClonePieces <|.. GamePiece
+GamePiece --> Position
+GamePiece --> GamePieceProps
 @enduml
 ```
 
 ### Participantes 
 
-| GOF               | Implementação no Projeto                      |
-|------------------|-----------------------------------------------|
-| **Prototype**      | `GamePrototype<T>` – interface de clonagem genérica |
-| **ConcretePrototype** | `GameBoard`, `Player` – implementam cópias profundas específicas |
-| **Client**         | `HistoryManager`, `GameManager`, entre outros que requisitam cópias |
+| GOF                 | Implementação no Projeto                          |
+|---------------------|----------------------------------------------------|
+| **Prototype**         | `GamePrototype<T>` – interface de clonagem        |
+| **ConcretePrototype** | `Position`, `GamePiece` – implementações concretas |
+| **Client**            | `GameSession`, `HistoryManager` – consomem cópias |
 
 ### Código
 
 #### Código do Framework
 @import "./src/framework/patterns/creational/prototype/GamePrototype.java"  
-@import "./src/framework/patterns/creational/prototype/ClonePieces.java"  
-@import "./src/framework/patterns/creational/prototype/GameBoard.java"  
-@import "./src/framework/patterns/creational/prototype/Player.java"
+@import "./src/framework/patterns/creational/prototype/Position.java"  
+@import "./src/framework/patterns/structural/flyweight/GamePiece.java"  
+@import "./src/framework/core/ClonePieces.java"
 
 ---
 
@@ -1277,3 +1280,108 @@ GameSessionProxy --> GameSession
 @import "./src/framework/patterns/structural/proxy/IGameSession.java"
 
 
+
+Aqui está a versão atualizada da seção do padrão **Iterator**, agora incluindo a **influência da biblioteca padrão do Java (`java.util.Iterator` e `java.lang.Iterable`)**:
+
+---
+
+## 12. Padrão Iterator
+
+### Intenção do Padrão  
+Fornecer uma maneira de acessar sequencialmente os elementos de um objeto agregado sem expor sua representação subjacente.
+
+### Motivação  
+No jogo da Selva, é comum percorrer todas as peças para realizar ações como:
+
+* aplicar movimentações;
+* distribuir peças entre jogadores;
+* verificar estado de peças (capturadas, ativas…).
+
+A classe `PieceDeck` representa um conjunto de peças e implementa `Iterable<GamePiece>`, permitindo uso direto de `for-each` e integração com APIs funcionais.
+
+### Influência da Biblioteca Java  
+O padrão **Iterator** é fortemente incorporado à linguagem Java por meio das interfaces `java.lang.Iterable<T>` e `java.util.Iterator<T>`, amplamente utilizadas em coleções como `List`, `Set`, `Map` e `Stream`.
+
+A implementação do padrão neste projeto **adere à especificação da linguagem**, garantindo compatibilidade com estruturas do Java e reduzindo a necessidade de iteradores personalizados.
+
+```java
+for (GamePiece piece : pieceDeck) {
+    // uso natural do padrão Iterator em Java
+}
+```
+
+#### Benefícios dessa integração  
+* Compatibilidade com estruturas Java (`for-each`, `Stream`, `Collectors`)  
+* Abstração da estrutura de dados interna (`List<GamePiece>`)  
+* Facilita testes, composição e extensibilidade
+
+### Cenário sem o padrão  
+A lista de peças teria que ser exposta diretamente:
+
+```java
+for (GamePiece p : pieceDeck.getAll()) {
+    // operação sobre a peça
+}
+```
+
+#### Problemas  
+* Acoplamento à estrutura da lista interna;  
+* Nenhuma abstração para iteração;  
+* Código menos expressivo e reutilizável.
+
+#### UML sem o padrão  
+```plantuml
+@startuml
+class PieceDeck {
+  -pieces : List<GamePiece>
+  +getAll() : List<GamePiece>
+}
+@enduml
+```
+
+### Estrutura do padrão  
+![alt text](imgs/iterator.png)
+
+### Padrão aplicado no cenário  
+A classe `PieceDeck` implementa `Iterable<GamePiece>` e expõe `iterator()` e `stream()`. Isso permite tanto iteração externa (`for-each`) quanto uso de streams funcionais.
+
+#### Classes envolvidas  
+- `PieceDeck` – coleção iterável de peças (`Iterable<GamePiece>`)  
+- `GamePiece` – elementos da coleção  
+- `Iterator` – iterador da lista  
+- `Stream<GamePiece>` – abstração funcional
+
+#### UML com o padrão aplicado  
+```plantuml
+@startuml
+interface Iterable<T> {
+  +iterator() : Iterator<T>
+}
+
+class PieceDeck {
+  -pieces : List<GamePiece>
+  +iterator() : Iterator<GamePiece>
+  +stream() : Stream<GamePiece>
+  +add(GamePiece)
+  +get(int) : GamePiece
+  +size() : int
+  +getAll() : List<GamePiece>
+}
+
+PieceDeck --> GamePiece
+Iterable <|.. PieceDeck
+@enduml
+```
+
+### Participantes 
+
+| GOF              | Implementação no Projeto                          |
+|------------------|----------------------------------------------------|
+| **Iterator**       | `Iterator<GamePiece>` – retorno de `pieces.iterator()` |
+| **Aggregate**      | `PieceDeck` – encapsula e expõe coleção iterável |
+| **Client**         | Código do jogo (`for-each`, `stream()`, etc.)     |
+
+### Código
+
+#### Código do Framework
+@import "./src/framework/patterns/behavioral/iterator/PieceDeck.java"
