@@ -1,8 +1,8 @@
 package games.jungle.patterns;
 
 import framework.core.Cell;
-import framework.patterns.creational.prototype.GameBoard;
-import framework.core.Position;
+import framework.core.GameBoard;
+import framework.patterns.creational.prototype.Position;
 import framework.patterns.structural.flyweight.GamePiece;
 import games.jungle.core.JungleCellType;
 import games.jungle.core.JunglePieceType;

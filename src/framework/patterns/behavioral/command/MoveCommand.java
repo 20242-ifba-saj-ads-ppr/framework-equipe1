@@ -1,7 +1,7 @@
 package framework.patterns.behavioral.command;
 
-import framework.patterns.creational.prototype.GameBoard;
-import framework.core.Position;
+import framework.core.GameBoard;
+import framework.patterns.creational.prototype.Position;
 import framework.patterns.structural.flyweight.GamePiece;
 
 public class MoveCommand implements GameCommand{
@@ -20,5 +20,25 @@ public class MoveCommand implements GameCommand{
     public void execute() {
         piece = gameBoard.getPieceAt(from).orElseThrow(() -> new IllegalArgumentException("No piece at " + from));
         piece.move(to, gameBoard);
+    }
+
+    public Position getTo() {
+        return to;
+    }
+
+    public Position getFrom() {
+        return from;
+    }
+
+    public GamePiece getPiece() {
+        return piece;
+    }
+
+    public void setPiece(GamePiece piece) {
+        this.piece = piece;
+    }
+
+    public GameBoard getGameBoard() {
+        return gameBoard;
     }
 }

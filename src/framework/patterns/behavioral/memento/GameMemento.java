@@ -1,13 +1,12 @@
 package framework.patterns.behavioral.memento;
 
-import framework.patterns.creational.prototype.GameBoard;
-import framework.patterns.creational.prototype.Player;
-
-import java.util.List;
+import framework.patterns.creational.prototype.Position;
+import framework.patterns.structural.flyweight.GamePiece;
 
 public record GameMemento(
-        GameBoard boardSnapshot,
-        List<Player> playerSnapshot,
+        GamePiece piece,
+        Position previous,
+        Position current,
         int turn
 ) {
 

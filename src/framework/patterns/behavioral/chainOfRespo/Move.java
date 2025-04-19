@@ -1,7 +1,7 @@
 package framework.patterns.behavioral.chainOfRespo;
 
-import framework.patterns.creational.prototype.GameBoard;
-import framework.core.Position;
+import framework.core.GameBoard;
+import framework.patterns.creational.prototype.Position;
 
 public interface Move
 {

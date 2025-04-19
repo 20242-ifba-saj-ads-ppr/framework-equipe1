@@ -1,7 +1,7 @@
 package games.jungle.patterns.builder;
 
-import framework.core.Position;
-import framework.patterns.creational.prototype.GameBoard;
+import framework.patterns.creational.prototype.Position;
+import framework.core.GameBoard;
 import framework.patterns.creational.builder.BoardBuilder;
 import framework.patterns.structural.flyweight.GamePiece;
 import games.jungle.core.JungleCellType;
@@ -57,7 +57,7 @@ public class JungleBoardBuilder implements BoardBuilder {
     }
 
     private void placeInitialAnimals() {
-        List<GamePiece> pieces = board.getPieces();
+        List<GamePiece> pieces = board.getPieces().getAll();
 
         int[][] positions = {
                 {0, 6}, {2, 6}, {4, 6}, {6, 6},

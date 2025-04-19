@@ -1,7 +1,7 @@
 package games.jungle.patterns.chainOfRespo;
 
-import framework.patterns.creational.prototype.GameBoard;
-import framework.core.Position;
+import framework.core.GameBoard;
+import framework.patterns.creational.prototype.Position;
 import framework.patterns.behavioral.chainOfRespo.MoveHandler;
 import games.jungle.core.JungleCellType;
 

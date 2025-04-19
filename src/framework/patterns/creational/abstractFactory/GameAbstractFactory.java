@@ -1,7 +1,7 @@
 package framework.patterns.creational.abstractFactory;
 
-import framework.patterns.creational.prototype.GameBoard;
-import framework.patterns.creational.prototype.Player;
+import framework.core.GameBoard;
+import framework.core.Player;
 import framework.patterns.structural.flyweight.GamePiece;
 
 import java.util.List;

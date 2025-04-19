@@ -1,7 +1,7 @@
 package framework.patterns.structural.proxy;
-import framework.core.Position;
-import framework.patterns.creational.prototype.GameBoard;
-import framework.patterns.creational.prototype.Player;
+import framework.patterns.creational.prototype.Position;
+import framework.core.GameBoard;
+import framework.core.Player;
 
 public interface IGameSession {
     void move(Position from, Position to);

@@ -1,20 +1,18 @@
-package framework.patterns.creational.prototype;
+package framework.core;
 
-import framework.core.Cell;
-import framework.core.ClonePieces;
-import framework.core.Position;
 import framework.core.cellType.CellType;
+import framework.patterns.behavioral.iterator.PieceDeck;
+import framework.patterns.creational.prototype.Position;
 import framework.patterns.structural.flyweight.GamePiece;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-public class GameBoard implements GamePrototype<GameBoard>, ClonePieces<GameBoard> {
+public class GameBoard {
     private final int width, height;
     private final Map<Position, Cell> cells;
-    private List<GamePiece> pieces;
+    private PieceDeck pieces;
 
     public GameBoard(int width, int height){
         this.width = width;
@@ -51,13 +49,14 @@ public class GameBoard implements GamePrototype<GameBoard>, ClonePieces<GameBoar
         return height;
     }
 
-    public List<GamePiece> getPieces() {
+    public PieceDeck getPieces() {
         return pieces;
     }
 
-    public void setPieces(List<GamePiece> pieces) {
+    public void setPieces(PieceDeck pieces) {
         this.pieces = pieces;
     }
+
 
     public Optional<GamePiece> getPieceAt(Position pos) {
         return pieces == null ? Optional.empty()
@@ -71,31 +70,8 @@ public class GameBoard implements GamePrototype<GameBoard>, ClonePieces<GameBoar
             throw new IllegalStateException("Peças ainda não foram inicializadas via setPieces().");
         }
 
-        if (!this.pieces.contains(piece)) {
+        if (!this.pieces.getAll().contains(piece)) {
             this.pieces.add(piece);
         }
-    }
-
-    @Override
-    public GameBoard clone() {
-        return cloneWithCache(new HashMap<>());
-    }
-
-    @Override
-    public GameBoard cloneWithCache(Map<GamePiece, GamePiece> cache) {
-        GameBoard clone = new GameBoard(this.width, this.height);
-
-        for (Map.Entry<Position, Cell> entry : this.cells.entrySet()) {
-            Cell originalCell = entry.getValue();
-            clone.getCell(entry.getKey()).setType(originalCell.getType());
-        }
-
-        if (this.pieces != null) {
-            clone.setPieces(this.pieces.stream()
-                    .map(p -> p.cloneWithCache(cache))
-                    .toList());
-        }
-
-        return clone;
     }
 }

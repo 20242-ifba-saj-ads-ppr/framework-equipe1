@@ -1,9 +1,9 @@
 package framework.patterns.creational.singleton;
 
-import framework.patterns.creational.prototype.GameBoard;
+import framework.core.GameBoard;
 import framework.core.GameRegistry;
-import framework.patterns.creational.prototype.Player;
-import framework.core.Position;
+import framework.core.Player;
+import framework.patterns.creational.prototype.Position;
 import framework.patterns.creational.abstractFactory.GameAbstractFactory;
 import framework.patterns.structural.facade.GameSession;
 import framework.patterns.structural.proxy.GameSessionProxy;

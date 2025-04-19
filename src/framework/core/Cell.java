@@ -2,6 +2,7 @@ package framework.core;
 
 import framework.core.cellType.BasicCellType;
 import framework.core.cellType.CellType;
+import framework.patterns.creational.prototype.Position;
 
 public class Cell {
     private final Position position;

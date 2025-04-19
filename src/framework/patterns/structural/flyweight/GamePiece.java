@@ -1,8 +1,8 @@
 package framework.patterns.structural.flyweight;
 
 import framework.core.ClonePieces;
-import framework.patterns.creational.prototype.GameBoard;
-import framework.core.Position;
+import framework.core.GameBoard;
+import framework.patterns.creational.prototype.Position;
 import framework.core.exceptions.InvalidMovementException;
 import framework.core.BasicGamePiece;
 import framework.patterns.creational.prototype.GamePrototype;

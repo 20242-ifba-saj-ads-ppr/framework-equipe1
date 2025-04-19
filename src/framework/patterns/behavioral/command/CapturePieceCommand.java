@@ -1,7 +1,7 @@
 package framework.patterns.behavioral.command;
 
-import framework.core.Position;
-import framework.patterns.creational.prototype.GameBoard;
+import framework.patterns.creational.prototype.Position;
+import framework.core.GameBoard;
 import framework.patterns.structural.flyweight.GamePiece;
 
 public class CapturePieceCommand implements GameCommand{
@@ -18,7 +18,7 @@ public class CapturePieceCommand implements GameCommand{
     public void execute() {
         captured = board.getPieceAt(target).orElse(null);
         if (captured != null) {
-            board.getPieces().remove(captured);
+            board.getPieces().getAll().remove(captured);
         }
     }
 }

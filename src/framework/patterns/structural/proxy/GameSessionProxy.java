@@ -1,9 +1,9 @@
 package framework.patterns.structural.proxy;
 
-import framework.core.Position;
+import framework.patterns.creational.prototype.Position;
 import framework.patterns.structural.facade.GameSession;
-import framework.patterns.creational.prototype.GameBoard;
-import framework.patterns.creational.prototype.Player;
+import framework.core.GameBoard;
+import framework.core.Player;
 
 public class GameSessionProxy implements IGameSession {
 

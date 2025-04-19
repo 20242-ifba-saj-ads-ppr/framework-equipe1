@@ -1,6 +1,6 @@
 package framework.core;
 
-import framework.patterns.creational.prototype.GameBoard;
+import framework.patterns.creational.prototype.Position;
 
 public abstract class BasicGamePiece {
     private Position position;
