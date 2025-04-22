@@ -1,7 +1,11 @@
+import external.GraphicEngine;
+import external.SuperConsoleEngine;
 import framework.core.GameBoard;
 import framework.core.Player;
 import framework.patterns.creational.prototype.Position;
 import framework.patterns.creational.singleton.GameManager;
+import framework.patterns.structural.adapter.GraphicEngineImp;
+import framework.patterns.structural.adapter.IGraphicEngineAdapter;
 
 public class App {
     public static void main(String[] args) {
@@ -9,7 +13,9 @@ public class App {
         String playerId = "JunglePlayer1";
 
         GameManager manager = GameManager.getInstance();
-        manager.start(gameId, playerId);
+        GraphicEngine graphicEngine = new SuperConsoleEngine();
+        IGraphicEngineAdapter graphicEngineAdapter = new GraphicEngineImp(graphicEngine);
+        manager.start(gameId, playerId, graphicEngineAdapter);
         GameBoard board = manager.board();
         Player current = manager.currentPlayer();
         System.out.println("Jogo iniciado com sucesso!");

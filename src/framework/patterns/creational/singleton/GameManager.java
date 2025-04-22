@@ -5,6 +5,7 @@ import framework.core.GameRegistry;
 import framework.core.Player;
 import framework.patterns.creational.prototype.Position;
 import framework.patterns.creational.abstractFactory.GameAbstractFactory;
+import framework.patterns.structural.adapter.IGraphicEngineAdapter;
 import framework.patterns.structural.facade.GameSession;
 import framework.patterns.structural.proxy.GameSessionProxy;
 import framework.patterns.structural.proxy.IGameSession;
@@ -16,6 +17,7 @@ public final class GameManager {
 
     private final Map<String, GameAbstractFactory> factories;
     private IGameSession currentSession;
+    private IGraphicEngineAdapter graphicEngine;
 
     private GameManager() {
         this.factories = GameRegistry.getAll();
@@ -25,7 +27,7 @@ public final class GameManager {
         return INSTANCE;
     }
 
-    public void start(String gameId, String playerId) {
+    public void start(String gameId, String playerId, IGraphicEngineAdapter graphicEngine) {
         GameAbstractFactory factory = factories.get(gameId);
         if (factory == null) {
             throw new IllegalArgumentException("Game not found: " + gameId);
@@ -33,10 +35,14 @@ public final class GameManager {
 
         GameSession session = new GameSession(factory);
         currentSession = new GameSessionProxy(session, playerId);
+        this.graphicEngine = graphicEngine;
+        graphicEngine.render(currentSession);
+
     }
 
     public void move(Position from, Position to) {
         currentSession.move(from, to);
+        graphicEngine.highlighPosition(to);
     }
 
     public void undo() {

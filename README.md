@@ -1385,3 +1385,112 @@ Iterable <|.. PieceDeck
 
 #### Código do Framework
 @import "./src/framework/patterns/behavioral/iterator/PieceDeck.java"
+
+
+---
+
+## 13. Padrão Adapter
+
+### Intenção do Padrão
+Converter a interface de uma classe em outra interface esperada pelos clientes. O Adapter permite que classes com interfaces incompatíveis colaborem.
+
+---
+
+### Motivação
+
+A aplicação utiliza um **framework de jogos de tabuleiro** cujo núcleo lida com lógica de regras (`GameSession`, `GameBoard`, `GamePiece`, `Player`, etc.). Ao introduzir um **motor gráfico externo** (como `SuperConsoleEngine`), é necessário adaptar sua interface (`GraphicEngine`) para que o `GameManager` consiga usá-lo de forma transparente, sem acoplamento direto.
+
+---
+
+### Aplicabilidade
+
+O padrão Adapter é apropriado aqui porque:
+
+- O motor gráfico externo (`GraphicEngine`) possui uma **interface diferente** da usada internamente no framework (`IGameSession`);
+- O `GameManager` quer renderizar visualmente o jogo **sem conhecer a implementação gráfica concreta**;
+- Deseja-se **reutilizar o mesmo adapter para diferentes engines**, como `Console`, `JavaFX`, etc.;
+- A implementação usa **composição (adapter de objeto)** para converter interfaces.
+
+---
+
+### Estrutura do padrão  
+![alt text](imgs/adapter.png)
+
+### Estrutura
+
+```plantuml
+@startuml
+interface GraphicEngine {
+  +renderBoard(GameBoard)
+  +renderPlayers(List<Player>)
+  +renderPieces(List<GamePiece>)
+  +highlightPosition(int, int)
+}
+
+interface IGraphicEngineAdapter {
+  +render(IGameSession)
+  +highlighPosition(Position)
+}
+
+class SuperConsoleEngine
+class GraphicEngineImp {
+  -graphicEngine : GraphicEngine
+  +render(IGameSession)
+  +highlighPosition(Position)
+}
+
+GameManager --> IGraphicEngineAdapter
+GraphicEngineImp --> GraphicEngine
+IGraphicEngineAdapter <|.. GraphicEngineImp
+GraphicEngine <|.. SuperConsoleEngine
+@enduml
+```
+
+---
+
+### Participantes
+
+| Participante | Papel |
+|--------------|-------|
+| **Target** (`IGraphicEngineAdapter`) | Interface esperada pelo `GameManager` |
+| **Client** (`GameManager`) | Usa o motor gráfico via interface adaptada |
+| **Adaptee** (`GraphicEngine`, `SuperConsoleEngine`) | Interface original do motor gráfico externo |
+| **Adapter** (`GraphicEngineImp`) | Conecta `GraphicEngine` com `IGraphicEngineAdapter` |
+
+---
+
+### Código
+
+#### Target
+@import "./src/framework/patterns/structural/adapter/IGraphicEngineAdapter.java"
+
+#### Adaptee
+@import "./src/external/GraphicEngine.java"
+@import "./src/external/SuperConsoleEngine.java"
+
+#### Adapter
+@import "./src/framework/patterns/structural/adapter/GraphicEngineImp.java"
+
+
+#### Exemplo de uso com o `GameManager`
+```java
+GameManager manager = GameManager.getInstance();
+GraphicEngine engine = new SuperConsoleEngine();
+IGraphicEngineAdapter adapter = new GraphicEngineImp(engine);
+manager.start("Jungle", "JunglePlayer1", adapter);
+```
+
+---
+
+### Benefícios
+
+- Permite **usar motores gráficos externos** sem alterar o framework;
+- Facilita a **troca de implementação** do motor (`Console`, `JavaFX`, etc.);
+- Segue o princípio da **inversão de dependência** (DIP);
+- Mantém o `GameManager` desacoplado da lógica de renderização.
+
+---
+
+### Tipo do Adapter
+
+🔁 **Adapter de Objeto** — implementado via composição, não herança.
